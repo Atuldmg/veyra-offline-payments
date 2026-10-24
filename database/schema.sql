@@ -71,7 +71,7 @@ CREATE TABLE IF NOT EXISTS `idempotency_records` (
     `id` BIGINT AUTO_INCREMENT PRIMARY KEY,
     `packet_hash` VARCHAR(64) NOT NULL UNIQUE,
     `first_bridge_node` VARCHAR(50) NOT NULL,
-    `claim_status` ENUM('CLAIMED', 'SETTLED', 'DROPPED_DUPLICATE', 'EXPIRED') NOT NULL DEFAULT 'CLAIMED',
+    `claim_status` VARCHAR(50) NOT NULL DEFAULT 'CLAIMED',
     `transaction_id` BIGINT NULL,
     `claimed_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     INDEX `idx_idempotency_hash` (`packet_hash`)
