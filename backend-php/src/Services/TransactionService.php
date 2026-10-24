@@ -150,15 +150,35 @@ class TransactionService
                 $tx = $stmt->fetch();
 
                 if ($tx) {
-                    $newStatus = ($outcome === 'SETTLED') ? 'SYNCHRONIZED' : (($outcome === 'DUPLICATE_DROPPED') ? $tx['status'] : 'REJECTED');
+                    $newStatus = ($outcome === 'SETTLED') ? 'SYNCHRONIZED' : (($outcome === 'DUPLICATE_DROPPED') ? 'SYNCHRONIZED' : 'REJECTED');
                     $this->txRepo->updateStatus((int)$tx['id'], $newStatus, $reason, $bridgeNode, 1);
                     $this->txRepo->logStatusTransition((int)$tx['id'], $tx['status'], $newStatus, 'BRIDGE_SYNCHRONIZER', "Outcome: {$outcome}");
                     $this->txRepo->recordIdempotencyClaim($tx['packet_hash'], $bridgeNode, $outcome, (int)$tx['id']);
                 }
 
-                if ($outcome === 'SETTLED' || $outcome === 'REJECTED') {
+                if ($outcome === 'SETTLED' || $outcome === 'DUPLICATE_DROPPED' || $outcome === 'REJECTED') {
                     $this->queueRepo->markIngested($packetId);
                 }
+            }
+        }
+
+        // Reconcile any remaining unsettled transactions with confirmed Java ledger records
+        foreach ($javaTxs as $jTx) {
+            $jStatus = ($jTx['status'] === 'SETTLED') ? 'SYNCHRONIZED' : (($jTx['status'] === 'REJECTED') ? 'REJECTED' : 'CREATED');
+            $findStmt = $db->prepare("
+                SELECT id, status FROM transactions 
+                WHERE sender_vpa = :sender AND receiver_vpa = :receiver AND amount = :amount AND status = 'QUEUED_FOR_SYNC'
+                ORDER BY id ASC LIMIT 1
+            ");
+            $findStmt->execute([
+                'sender'   => $jTx['senderVpa'],
+                'receiver' => $jTx['receiverVpa'],
+                'amount'   => $jTx['amount']
+            ]);
+            $match = $findStmt->fetch();
+            if ($match) {
+                $this->txRepo->updateStatus((int)$match['id'], $jStatus, null, $jTx['bridgeNodeId'] ?? 'phone-bridge', (int)($jTx['hopCount'] ?? 1));
+                $this->txRepo->logStatusTransition((int)$match['id'], $match['status'], $jStatus, 'JAVA_SERVICE_SYNC', "Reconciled with Java ledger record #{$jTx['id']}");
             }
         }
 
