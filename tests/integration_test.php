@@ -36,7 +36,7 @@ function runTest(int $num, string $title, callable $testFn): void {
 require_once __DIR__ . '/../backend-php/src/Config.php';
 require_once __DIR__ . '/../backend-php/src/Database.php';
 require_once __DIR__ . '/../backend-php/src/Auth.php';
-require_once __DIR__ . '/../backend-php/src/Clients/JavaVerifierClient.php';
+require_once __DIR__ . '/../backend-php/src/Services/JavaVerificationClient.php';
 require_once __DIR__ . '/../backend-php/src/Repositories/AccountRepository.php';
 require_once __DIR__ . '/../backend-php/src/Repositories/TransactionRepository.php';
 require_once __DIR__ . '/../backend-php/src/Repositories/QueueRepository.php';
@@ -48,7 +48,7 @@ require_once __DIR__ . '/../backend-php/src/Services/QueueService.php';
 use Veyra\Config;
 use Veyra\Database;
 use Veyra\Auth;
-use Veyra\Clients\JavaVerifierClient;
+use Veyra\Services\JavaVerificationClient;
 use Veyra\Repositories\AccountRepository;
 use Veyra\Repositories\TransactionRepository;
 use Veyra\Repositories\QueueRepository;
@@ -76,14 +76,14 @@ runTest(2, "Database Connection & 8 Schema Tables", function() {
 
 // Test 3: Java Verification Microservice Health
 runTest(3, "Java Verification Microservice Health", function() {
-    $client = new JavaVerifierClient();
+    $client = new JavaVerificationClient();
     $health = $client->checkHealth();
     return ($health !== null && ($health['status'] ?? '') === 'UP');
 });
 
 // Test 4: PHP-to-Java Key Exchange & Fingerprint
 runTest(4, "PHP-to-Java Public Key Exchange", function() {
-    $client = new JavaVerifierClient();
+    $client = new JavaVerificationClient();
     $keyInfo = $client->getPublicKeyInfo();
     return ($keyInfo !== null && !empty($keyInfo['publicKeyPem']));
 });
