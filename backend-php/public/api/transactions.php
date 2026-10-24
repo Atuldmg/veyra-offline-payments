@@ -44,7 +44,7 @@ if ($method === 'POST') {
     $ttl         = (int)($body['ttl'] ?? 5);
 
     if (empty($senderVpa) || empty($receiverVpa) || $amount <= 0) {
-        http_response_code(400);
+        http_response_code(422);
         echo json_encode([
             'status' => 'ERROR',
             'error'  => 'Missing or invalid fields: senderVpa, receiverVpa, and positive amount are required.'
@@ -62,7 +62,7 @@ if ($method === 'POST') {
             'data'    => $result
         ], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
     } catch (\Throwable $t) {
-        http_response_code(400);
+        http_response_code(422);
         echo json_encode([
             'status' => 'ERROR',
             'error'  => $t->getMessage()

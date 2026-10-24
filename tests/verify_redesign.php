@@ -189,8 +189,8 @@ runTest("12. System API returns RSA public key and audit events", function() use
     $res = httpGet("{$baseUrl}/api/system.php");
     if ($res['code'] !== 200) return "HTTP {$res['code']}";
     $d = $res['data'];
-    if (empty($d['crypto']['publicKeyFingerprint'])) return "Missing publicKeyFingerprint";
-    if (!is_array($d['auditEvents'])) return "Missing auditEvents";
+    if (empty($d['serverPublicKey'])) return "Missing serverPublicKey";
+    if (!is_array($d['recentAudits'])) return "Missing recentAudits";
     return true;
 });
 
