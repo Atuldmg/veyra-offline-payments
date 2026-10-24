@@ -48,7 +48,7 @@ class TransactionService
         }
 
         // Validate sender account
-        $sender = $this->accountRepo.findByVpa($senderVpa);
+        $sender = $this->accountRepo->findByVpa($senderVpa);
         if (!$sender) {
             throw new Exception("Sender account not found: {$senderVpa}");
         }
@@ -57,7 +57,7 @@ class TransactionService
         }
 
         // Validate receiver account
-        $receiver = $this->accountRepo.findByVpa($receiverVpa);
+        $receiver = $this->accountRepo->findByVpa($receiverVpa);
         if (!$receiver) {
             throw new Exception("Receiver account not found: {$receiverVpa}");
         }
