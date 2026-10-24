@@ -1,0 +1,442 @@
+/**
+ * VEYRA — Dashboard UI Design System
+ * Inspired by modern, human-crafted Bootstrap 5 admin dashboards (CampusConnect reference)
+ * Supports 3 Theme Modes: Light, Dark, System
+ */
+
+/* ==========================================================================
+   1. Theme Tokens (CSS Custom Properties)
+   ========================================================================== */
+:root {
+  --veyra-primary: #0d6efd;
+  --veyra-primary-hover: #0b5ed7;
+  --veyra-primary-subtle: #e7f1ff;
+  --veyra-success: #198754;
+  --veyra-success-subtle: #d1e7dd;
+  --veyra-warning: #d97706;
+  --veyra-warning-subtle: #fef3c7;
+  --veyra-danger: #dc3545;
+  --veyra-danger-subtle: #f8d7da;
+  --veyra-info: #0891b2;
+  --veyra-info-subtle: #cff4fc;
+
+  --veyra-font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --veyra-font-mono: 'JetBrains Mono', SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
+  --veyra-sidebar-width: 250px;
+  --veyra-topbar-height: 64px;
+}
+
+/* Light Theme Variables */
+[data-bs-theme="light"] {
+  --veyra-body-bg: #f8fafc;
+  --veyra-card-bg: #ffffff;
+  --veyra-card-border: #e2e8f0;
+  --veyra-text-main: #0f172a;
+  --veyra-text-muted: #64748b;
+  --veyra-sidebar-bg: #ffffff;
+  --veyra-sidebar-border: #e2e8f0;
+  --veyra-topbar-bg: #ffffff;
+  --veyra-topbar-border: #e2e8f0;
+  --veyra-card-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.05);
+  --veyra-card-hover-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+  --veyra-code-bg: #f1f5f9;
+}
+
+/* Dark Theme Variables */
+[data-bs-theme="dark"] {
+  --veyra-body-bg: #0b132b;
+  --veyra-card-bg: #1c2541;
+  --veyra-card-border: #2e3a59;
+  --veyra-text-main: #f8fafc;
+  --veyra-text-muted: #94a3b8;
+  --veyra-sidebar-bg: #111a33;
+  --veyra-sidebar-border: #232f4e;
+  --veyra-topbar-bg: #111a33;
+  --veyra-topbar-border: #232f4e;
+  --veyra-primary-subtle: rgba(13, 110, 253, 0.18);
+  --veyra-success-subtle: rgba(25, 135, 84, 0.2);
+  --veyra-warning-subtle: rgba(217, 119, 6, 0.2);
+  --veyra-danger-subtle: rgba(220, 53, 69, 0.2);
+  --veyra-info-subtle: rgba(8, 145, 178, 0.2);
+  --veyra-card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -2px rgba(0, 0, 0, 0.2);
+  --veyra-card-hover-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -4px rgba(0, 0, 0, 0.3);
+  --veyra-code-bg: #070c18;
+}
+
+/* ==========================================================================
+   2. Global Typography & Layout Elements
+   ========================================================================== */
+body {
+  font-family: var(--veyra-font-sans);
+  background-color: var(--veyra-body-bg);
+  color: var(--veyra-text-main);
+  min-height: 100vh;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+/* Top Navbar */
+.veyra-navbar {
+  height: var(--veyra-topbar-height);
+  background-color: var(--veyra-topbar-bg);
+  border-bottom: 1px solid var(--veyra-topbar-border);
+  position: sticky;
+  top: 0;
+  z-index: 1020;
+  padding: 0 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.brand-portal-badge {
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  padding: 0.2rem 0.45rem;
+  border-radius: 4px;
+  color: var(--veyra-primary);
+  border: 1px solid var(--veyra-primary);
+  text-transform: uppercase;
+}
+
+/* Nav links in topbar */
+.veyra-nav-link {
+  color: var(--veyra-text-muted);
+  font-size: 0.9rem;
+  font-weight: 500;
+  text-decoration: none;
+  padding: 0.5rem 0.85rem;
+  border-radius: 6px;
+  transition: all 0.15s ease;
+}
+
+.veyra-nav-link:hover, .veyra-nav-link.active {
+  color: var(--veyra-primary);
+  background-color: var(--veyra-primary-subtle);
+}
+
+/* Sidebar */
+.veyra-sidebar {
+  width: var(--veyra-sidebar-width);
+  background-color: var(--veyra-sidebar-bg);
+  border-right: 1px solid var(--veyra-sidebar-border);
+  flex-shrink: 0;
+  min-height: calc(100vh - var(--veyra-topbar-height));
+  padding: 1.25rem 1rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.sidebar-profile-widget {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  margin-bottom: 1.5rem;
+  background-color: var(--veyra-primary-subtle);
+  border-radius: 0.65rem;
+}
+
+.sidebar-profile-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 0.5rem;
+  background-color: var(--veyra-primary);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+}
+
+.sidebar-heading {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--veyra-text-muted);
+  padding: 0.5rem 0.75rem 0.25rem;
+  margin-top: 0.75rem;
+}
+
+.sidebar-menu {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.sidebar-item {
+  margin-bottom: 0.25rem;
+}
+
+.sidebar-link {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.65rem 0.85rem;
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: var(--veyra-text-muted);
+  text-decoration: none;
+  border-radius: 0.5rem;
+  transition: all 0.15s ease;
+}
+
+.sidebar-link:hover {
+  color: var(--veyra-text-main);
+  background-color: rgba(148, 163, 184, 0.12);
+}
+
+.sidebar-link.active {
+  color: #ffffff !important;
+  background-color: var(--veyra-primary) !important;
+  font-weight: 600;
+  box-shadow: 0 4px 10px rgba(13, 110, 253, 0.25);
+}
+
+.sidebar-link.active i {
+  color: #ffffff;
+}
+
+/* Main Content Area */
+.veyra-main-content {
+  flex-grow: 1;
+  padding: 1.75rem;
+  overflow-y: auto;
+}
+
+/* ==========================================================================
+   3. Card Components (Matching CampusConnect)
+   ========================================================================== */
+.card-veyra {
+  background-color: var(--veyra-card-bg);
+  border: 1px solid var(--veyra-card-border);
+  border-radius: 0.75rem;
+  box-shadow: var(--veyra-card-shadow);
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+  margin-bottom: 1.5rem;
+}
+
+.card-veyra:hover {
+  box-shadow: var(--veyra-card-hover-shadow);
+}
+
+.card-veyra-header {
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--veyra-card-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.card-veyra-title {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.card-veyra-body {
+  padding: 1.25rem;
+}
+
+/* Stat Metric Cards (CampusConnect 4-card row) */
+.metric-card {
+  background-color: var(--veyra-card-bg);
+  border: 1px solid var(--veyra-card-border);
+  border-radius: 0.75rem;
+  box-shadow: var(--veyra-card-shadow);
+  padding: 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 100%;
+}
+
+.metric-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--veyra-text-muted);
+}
+
+.metric-value {
+  font-size: 1.85rem;
+  font-weight: 800;
+  line-height: 1.2;
+  margin: 0.25rem 0 0.15rem;
+  color: var(--veyra-text-main);
+}
+
+.metric-subtext {
+  font-size: 0.78rem;
+  color: var(--veyra-text-muted);
+}
+
+.metric-icon-box {
+  width: 48px;
+  height: 48px;
+  border-radius: 0.65rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.35rem;
+}
+
+.icon-blue { background-color: var(--veyra-primary-subtle); color: var(--veyra-primary); }
+.icon-amber { background-color: var(--veyra-warning-subtle); color: var(--veyra-warning); }
+.icon-green { background-color: var(--veyra-success-subtle); color: var(--veyra-success); }
+.icon-cyan { background-color: var(--veyra-info-subtle); color: var(--veyra-info); }
+
+/* Quick Action Shortcuts (CampusConnect bottom row) */
+.action-shortcut-btn {
+  background-color: var(--veyra-card-bg);
+  border: 1px solid var(--veyra-card-border);
+  border-radius: 0.65rem;
+  padding: 1rem 0.75rem;
+  text-align: center;
+  color: var(--veyra-text-main);
+  text-decoration: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: all 0.2s ease;
+  width: 100%;
+}
+
+.action-shortcut-btn:hover {
+  border-color: var(--veyra-primary);
+  background-color: var(--veyra-primary-subtle);
+  color: var(--veyra-primary);
+  transform: translateY(-2px);
+}
+
+.action-shortcut-btn i {
+  font-size: 1.35rem;
+}
+
+/* ==========================================================================
+   4. Status Badges & Tables
+   ========================================================================== */
+.badge-soft-success {
+  background-color: var(--veyra-success-subtle);
+  color: var(--veyra-success);
+  font-weight: 600;
+  font-size: 0.75rem;
+  padding: 0.35rem 0.65rem;
+  border-radius: 9999px;
+}
+
+.badge-soft-warning {
+  background-color: var(--veyra-warning-subtle);
+  color: var(--veyra-warning);
+  font-weight: 600;
+  font-size: 0.75rem;
+  padding: 0.35rem 0.65rem;
+  border-radius: 9999px;
+}
+
+.badge-soft-primary {
+  background-color: var(--veyra-primary-subtle);
+  color: var(--veyra-primary);
+  font-weight: 600;
+  font-size: 0.75rem;
+  padding: 0.35rem 0.65rem;
+  border-radius: 9999px;
+}
+
+.badge-soft-danger {
+  background-color: var(--veyra-danger-subtle);
+  color: var(--veyra-danger);
+  font-weight: 600;
+  font-size: 0.75rem;
+  padding: 0.35rem 0.65rem;
+  border-radius: 9999px;
+}
+
+.table-veyra th {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--veyra-text-muted);
+  border-bottom: 2px solid var(--veyra-card-border);
+  padding: 0.85rem 1rem;
+}
+
+.table-veyra td {
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid var(--veyra-card-border);
+  vertical-align: middle;
+  font-size: 0.88rem;
+}
+
+/* Notice Board & Mesh Item lists (Right Column) */
+.notice-item {
+  padding: 0.85rem;
+  border: 1px solid var(--veyra-card-border);
+  border-radius: 0.6rem;
+  margin-bottom: 0.75rem;
+  transition: all 0.15s ease;
+}
+
+.notice-item:hover {
+  background-color: rgba(148, 163, 184, 0.06);
+}
+
+.notice-badge {
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 0.2rem 0.45rem;
+  border-radius: 4px;
+}
+
+/* Code block */
+.code-preview {
+  font-family: var(--veyra-font-mono);
+  background-color: var(--veyra-code-bg);
+  border: 1px solid var(--veyra-card-border);
+  border-radius: 0.5rem;
+  padding: 0.75rem;
+  font-size: 0.8rem;
+  color: var(--veyra-primary);
+  word-break: break-all;
+}
+
+/* Mobile responsive sidebar */
+@media (max-width: 991.98px) {
+  .veyra-sidebar {
+    position: fixed;
+    top: var(--veyra-topbar-height);
+    left: -100%;
+    z-index: 1040;
+    transition: left 0.25s ease;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
+  }
+  .veyra-sidebar.show {
+    left: 0;
+  }
+  .sidebar-backdrop {
+    display: none;
+    position: fixed;
+    top: var(--veyra-topbar-height);
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.4);
+    z-index: 1030;
+  }
+  .sidebar-backdrop.show {
+    display: block;
+  }
+}
