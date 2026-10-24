@@ -89,7 +89,7 @@ class TransactionRepository
                 SET status = :status,
                     failure_reason = :reason,
                     bridge_node_id = COALESCE(:bridge, bridge_node_id),
-                    hop_count = CASE WHEN :hops > 0 THEN :hops ELSE hop_count END
+                    hop_count = CASE WHEN :hops1 > 0 THEN :hops2 ELSE hop_count END
                     {$settledSql}
                 WHERE id = :id";
 
@@ -98,7 +98,8 @@ class TransactionRepository
             'status' => $status,
             'reason' => $reason,
             'bridge' => $bridgeNodeId,
-            'hops'   => $hopCount,
+            'hops1'  => $hopCount,
+            'hops2'  => $hopCount,
             'id'     => $id
         ]);
     }
