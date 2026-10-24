@@ -141,9 +141,12 @@ class TransactionService
             $reason = $res['reason'] ?? null;
 
             if ($packetId) {
-                // Find matching transaction by packet_id
-                $stmt = $db->prepare("SELECT * FROM transactions WHERE packet_id = :pid LIMIT 1");
-                $stmt->execute(['pid' => $packetId]);
+                // Find matching transaction by packet_id (exact or 8-char prefix from Java)
+                $stmt = $db->prepare("SELECT * FROM transactions WHERE packet_id = :pid OR packet_id LIKE :pid_prefix LIMIT 1");
+                $stmt->execute([
+                    'pid'        => $packetId,
+                    'pid_prefix' => $packetId . '%'
+                ]);
                 $tx = $stmt->fetch();
 
                 if ($tx) {

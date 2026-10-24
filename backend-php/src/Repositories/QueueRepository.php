@@ -70,9 +70,12 @@ class QueueRepository
         $stmt = $this->db->prepare("
             UPDATE offline_queue 
             SET status = 'INGESTED'
-            WHERE packet_id = :packet_id
+            WHERE packet_id = :packet_id OR packet_id LIKE :prefix
         ");
-        $stmt->execute(['packet_id' => $packetId]);
+        $stmt->execute([
+            'packet_id' => $packetId,
+            'prefix'    => $packetId . '%'
+        ]);
     }
 
     public function clearAll(): void
