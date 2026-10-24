@@ -1,0 +1,51 @@
+version: '3.8'
+
+services:
+  db:
+    image: mysql:8.0
+    container_name: veyra-mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: veyra_db
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
+      - ./database/seed.sql:/docker-entrypoint-initdb.d/02-seed.sql
+      - db_data:/var/lib/mysql
+
+  backend-java:
+    build:
+      context: ./backend-java
+      dockerfile: Dockerfile
+    container_name: veyra-verifier
+    restart: always
+    environment:
+      SERVER_PORT: 8085
+      VEYRA_INTERNAL_API_KEY: veyra_internal_secret_token_change_in_production
+    ports:
+      - "8085:8085"
+
+  backend-php:
+    build:
+      context: ./backend-php
+      dockerfile: Dockerfile
+    container_name: veyra-gateway
+    restart: always
+    depends_on:
+      - db
+      - backend-java
+    environment:
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_NAME: veyra_db
+      DB_USER: root
+      DB_PASS: root
+      JAVA_VERIFIER_URL: http://backend-java:8085
+      INTERNAL_API_KEY: veyra_internal_secret_token_change_in_production
+    ports:
+      - "8000:8000"
+
+volumes:
+  db_data:

@@ -1,0 +1,59 @@
+# Render Deployment Blueprint for VEYRA Services
+services:
+  # 1. Java Verification Microservice
+  - type: web
+    name: veyra-verification-microservice
+    env: docker
+    dockerfilePath: backend-java/Dockerfile
+    dockerContext: backend-java
+    plan: standard
+    envVars:
+      - key: SERVER_PORT
+        value: 8085
+      - key: VEYRA_INTERNAL_API_KEY
+        generateValue: true
+
+  # 2. PHP API Gateway & Application Server
+  - type: web
+    name: veyra-php-gateway
+    env: docker
+    dockerfilePath: backend-php/Dockerfile
+    dockerContext: backend-php
+    plan: standard
+    envVars:
+      - key: DB_HOST
+        fromDatabase:
+          name: veyra-mysql-ledger
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: veyra-mysql-ledger
+          property: port
+      - key: DB_NAME
+        fromDatabase:
+          name: veyra-mysql-ledger
+          property: database
+      - key: DB_USER
+        fromDatabase:
+          name: veyra-mysql-ledger
+          property: user
+      - key: DB_PASS
+        fromDatabase:
+          name: veyra-mysql-ledger
+          property: password
+      - key: JAVA_VERIFIER_URL
+        fromService:
+          type: web
+          name: veyra-verification-microservice
+          property: host
+      - key: INTERNAL_API_KEY
+        fromService:
+          type: web
+          name: veyra-verification-microservice
+          envVarKey: VEYRA_INTERNAL_API_KEY
+
+databases:
+  - name: veyra-mysql-ledger
+    databaseName: veyra_db
+    user: veyra_user
+    plan: standard
