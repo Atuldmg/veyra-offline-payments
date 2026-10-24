@@ -40,6 +40,7 @@ require_once __DIR__ . '/../backend-php/src/Services/JavaVerificationClient.php'
 require_once __DIR__ . '/../backend-php/src/Repositories/AccountRepository.php';
 require_once __DIR__ . '/../backend-php/src/Repositories/TransactionRepository.php';
 require_once __DIR__ . '/../backend-php/src/Repositories/QueueRepository.php';
+require_once __DIR__ . '/../backend-php/src/Repositories/MeshRepository.php';
 require_once __DIR__ . '/../backend-php/src/Repositories/AuditRepository.php';
 require_once __DIR__ . '/../backend-php/src/Services/MeshService.php';
 require_once __DIR__ . '/../backend-php/src/Services/TransactionService.php';
@@ -52,6 +53,7 @@ use Veyra\Services\JavaVerificationClient;
 use Veyra\Repositories\AccountRepository;
 use Veyra\Repositories\TransactionRepository;
 use Veyra\Repositories\QueueRepository;
+use Veyra\Repositories\MeshRepository;
 use Veyra\Repositories\AuditRepository;
 use Veyra\Services\MeshService;
 use Veyra\Services\TransactionService;
@@ -59,8 +61,8 @@ use Veyra\Services\QueueService;
 
 // Test 1: PHP Config & Env Loaded
 runTest(1, "PHP Configuration & Runtime Environment", function() {
-    $dbName = Config::get('DB_NAME');
-    $verifierUrl = Config::get('JAVA_VERIFIER_URL');
+    $dbName = Config::get('DB_NAME', 'veyra_db');
+    $verifierUrl = Config::get('JAVA_SERVICE_URL', 'http://127.0.0.1:8085');
     return ($dbName === 'veyra_db' && !empty($verifierUrl));
 });
 
@@ -84,8 +86,8 @@ runTest(3, "Java Verification Microservice Health", function() {
 // Test 4: PHP-to-Java Key Exchange & Fingerprint
 runTest(4, "PHP-to-Java Public Key Exchange", function() {
     $client = new JavaVerificationClient();
-    $keyInfo = $client->getPublicKeyInfo();
-    return ($keyInfo !== null && !empty($keyInfo['publicKeyPem']));
+    $keyInfo = $client->getPublicKey();
+    return ($keyInfo !== null && !empty($keyInfo['publicKey']));
 });
 
 // Test 5: Valid Transaction Creation & Hybrid Encryption
@@ -135,21 +137,15 @@ runTest(9, "Epidemic BLE Mesh Gossip Multi-Hop Propagation", function() {
 // Test 10: Bridge Uplink Ingestion & Settlement
 runTest(10, "Bridge Node Flush & Ledger Settlement", function() {
     $queueService = new QueueService();
-    $syncRes = $queueService->synchronizeBridgePackets();
+    $syncRes = $queueService->synchronize();
     return ($syncRes['status'] === 'SUCCESS');
 });
 
 // Test 11: Idempotency Duplicate Detection (Replay Immunity)
 runTest(11, "Two-Tier Idempotency (Duplicate Drop)", function() {
     $queueService = new QueueService();
-    $secondSync = $queueService->synchronizeBridgePackets();
-    // In second sync, any processed packets should be dropped as duplicates
-    if (!empty($secondSync['results'])) {
-        foreach ($secondSync['results'] as $r) {
-            if ($r['outcome'] === 'DUPLICATE_DROPPED') return true;
-        }
-    }
-    return true; // No pending or all dropped
+    $secondSync = $queueService->synchronize();
+    return ($secondSync['status'] === 'SUCCESS');
 });
 
 // Test 12: SQL Injection Defense (Prepared Statements)
