@@ -58,10 +58,10 @@ class JavaClient
     public function sendPayment(string $senderVpa, string $receiverVpa, float $amount, string $pin = "1234"): ?array
     {
         return $this->request('POST', '/api/demo/send', [
-            'sender'   => $senderVpa,
-            'receiver' => $receiverVpa,
-            'amount'   => $amount,
-            'pin'      => $pin
+            'senderVpa'   => $senderVpa,
+            'receiverVpa' => $receiverVpa,
+            'amount'      => $amount,
+            'pin'         => $pin
         ]);
     }
 
