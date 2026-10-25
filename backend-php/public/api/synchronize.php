@@ -23,8 +23,16 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 try {
+    $raw = file_get_contents('php://input');
+    $body = json_decode($raw, true) ?: [];
+    $txId = isset($body['txId']) ? (int)$body['txId'] : null;
+
     $service = new TransactionService();
-    $result = $service->synchronizeBridges();
+    if ($txId) {
+        $result = $service->settleTransaction($txId);
+    } else {
+        $result = $service->synchronizeBridges();
+    }
     echo json_encode($result, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
 } catch (\Throwable $t) {
     http_response_code(500);
