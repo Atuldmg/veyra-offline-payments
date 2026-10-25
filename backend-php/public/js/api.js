@@ -75,9 +75,10 @@ const VeyraAPI = {
     });
   },
 
-  synchronizeBridges() {
+  synchronizeBridges(txId = null) {
     return this.request('/api/synchronize.php', {
-      method: 'POST'
+      method: 'POST',
+      body: JSON.stringify(txId ? { txId } : {})
     });
   },
 
