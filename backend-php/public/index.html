@@ -664,13 +664,29 @@
               <input type="range" class="form-range" id="txTtl" min="1" max="10" value="5">
             </div>
 
+            <div class="mb-3">
+              <label class="form-label small fw-semibold d-flex justify-content-between" for="txDeliveryDelay">
+                <span>Mesh Propagation Delivery Time:</span>
+                <strong class="text-primary" id="txDelayDisplay">1 min (60s)</strong>
+              </label>
+              <select class="form-select form-select-sm" id="txDeliveryDelay">
+                <option value="60" selected>1 Minute (60 seconds) — Realistic Multi-Hop BLE Transit (Default)</option>
+                <option value="90">1.5 Minutes (90 seconds) — Sparse Peer Density Route</option>
+                <option value="120">2 Minutes (120 seconds) — Long Distance Store-and-Forward</option>
+                <option value="0">Instant (Fast Test Mode)</option>
+              </select>
+              <div class="form-text fs-xs text-muted">
+                Offline payments take time to hop between peer devices before reaching an internet-connected gateway.
+              </div>
+            </div>
+
             <div class="form-check form-switch mt-3 mb-2">
               <input class="form-check-input" type="checkbox" role="switch" id="autoCompleteTransfer" checked>
               <label class="form-check-label small fw-semibold" for="autoCompleteTransfer">
                 Auto-complete delivery &amp; bank settlement
               </label>
               <div class="form-text fs-xs text-muted">
-                Simulates BLE peer mesh routing and settles immediately against the bank ledger.
+                Simulates BLE peer mesh routing and settles against the bank ledger upon reaching bridge.
               </div>
             </div>
 
@@ -686,6 +702,93 @@
             </button>
           </div>
         </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="meshTransitModal" data-bs-backdrop="static" tabindex="-1" aria-labelledby="meshTransitModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content card-veyra border-0">
+        <div class="modal-header border-bottom border-secondary-subtle">
+          <h5 class="modal-title fw-bold text-body" id="meshTransitModalLabel">
+            <i class="bi bi-broadcast text-primary me-2"></i>Offline Mesh Delivery In Transit
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="card-veyra p-3 mb-3 bg-body-tertiary">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <div class="small text-muted">Transfer Amount</div>
+                <h4 class="fw-bold text-primary mb-0" id="transitAmountDisplay">₹0.00</h4>
+              </div>
+              <div class="text-end">
+                <div class="small text-muted">Routing Path</div>
+                <div class="small fw-semibold" id="transitRouteDisplay">-- &rarr; --</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="text-center my-3">
+            <div class="display-5 fw-bold text-body font-monospace mb-1" id="transitCountdownDisplay">01:00</div>
+            <div class="small text-muted" id="transitStatusSubtext">Routing offline envelope across Bluetooth Low Energy peer mesh...</div>
+          </div>
+
+          <div class="progress mb-4" style="height: 10px;">
+            <div class="progress-bar progress-bar-striped progress-bar-animated bg-primary" id="transitProgressBar" role="progressbar" style="width: 0%"></div>
+          </div>
+
+          <div class="list-group list-group-flush small" id="transitStepsList">
+            <div class="list-group-item d-flex align-items-center px-0 py-2 border-0" id="transitStep1">
+              <i class="bi bi-shield-lock-fill text-primary me-3 fs-5" id="transitStep1Icon"></i>
+              <div class="flex-grow-1">
+                <div class="fw-semibold">1. Cryptographic Sealing &amp; Signing</div>
+                <div class="text-muted fs-xs">AES-256-GCM envelope injected at sender node</div>
+              </div>
+              <span class="badge bg-secondary-subtle text-secondary" id="transitStep1Badge">In Progress</span>
+            </div>
+            <div class="list-group-item d-flex align-items-center px-0 py-2 border-0" id="transitStep2">
+              <i class="bi bi-broadcast text-muted me-3 fs-5" id="transitStep2Icon"></i>
+              <div class="flex-grow-1">
+                <div class="fw-semibold">2. BLE Peer Discovery &amp; Hop 1</div>
+                <div class="text-muted fs-xs">Packet broadcast to nearby mobile devices in range</div>
+              </div>
+              <span class="badge bg-secondary-subtle text-secondary" id="transitStep2Badge">Pending</span>
+            </div>
+            <div class="list-group-item d-flex align-items-center px-0 py-2 border-0" id="transitStep3">
+              <i class="bi bi-diagram-3 text-muted me-3 fs-5" id="transitStep3Icon"></i>
+              <div class="flex-grow-1">
+                <div class="fw-semibold">3. Multi-Hop Store-and-Forward</div>
+                <div class="text-muted fs-xs">Encrypted packet relays across intermediate mobile peers</div>
+              </div>
+              <span class="badge bg-secondary-subtle text-secondary" id="transitStep3Badge">Pending</span>
+            </div>
+            <div class="list-group-item d-flex align-items-center px-0 py-2 border-0" id="transitStep4">
+              <i class="bi bi-router text-muted me-3 fs-5" id="transitStep4Icon"></i>
+              <div class="flex-grow-1">
+                <div class="fw-semibold">4. Bridge Node Encounter (4G Gateway)</div>
+                <div class="text-muted fs-xs">Packet reaches phone-bridge node with active cellular uplink</div>
+              </div>
+              <span class="badge bg-secondary-subtle text-secondary" id="transitStep4Badge">Pending</span>
+            </div>
+            <div class="list-group-item d-flex align-items-center px-0 py-2 border-0" id="transitStep5">
+              <i class="bi bi-bank2 text-muted me-3 fs-5" id="transitStep5Icon"></i>
+              <div class="flex-grow-1">
+                <div class="fw-semibold">5. Bank Ingestion &amp; Settlement</div>
+                <div class="text-muted fs-xs">RSA verification, double-entry ledger mutation, and settlement</div>
+              </div>
+              <span class="badge bg-secondary-subtle text-secondary" id="transitStep5Badge">Pending</span>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer border-top border-secondary-subtle d-flex justify-content-between" id="transitModalFooter">
+          <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal" id="btnMinimizeTransit">
+            <i class="bi bi-window-dash me-1"></i>Run in Background
+          </button>
+          <button type="button" class="btn btn-sm btn-success" id="btnSkipTransitDelay" onclick="VeyraApp.skipTransitDelay()">
+            <i class="bi bi-lightning-charge-fill me-1"></i>Settle Now (Fast-Forward)
+          </button>
+        </div>
       </div>
     </div>
   </div>
