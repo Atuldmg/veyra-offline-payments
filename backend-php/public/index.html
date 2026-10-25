@@ -44,7 +44,7 @@
         <a href="#" class="veyra-nav-link" data-view-target="transactions">Ledger History</a>
         <a href="#" class="veyra-nav-link" data-view-target="queue">Offline Queue</a>
         <a href="#" class="veyra-nav-link" data-view-target="mesh">Mesh Relays</a>
-        <a href="#" class="veyra-nav-link" data-view-target="wallets">Demo Wallets</a>
+        <a href="#" class="veyra-nav-link" data-view-target="banks">Demo Banks</a>
       </nav>
     </div>
 
@@ -94,7 +94,7 @@
           <li><span class="dropdown-item-text small text-muted font-monospace">Node: phone-atul</span></li>
           <li><span class="dropdown-item-text small text-muted">VPA: atul@demo</span></li>
           <li><hr class="dropdown-divider"></li>
-          <li><a class="dropdown-item" href="#" data-view-target="wallets"><i class="bi bi-wallet2 me-2"></i>Manage Wallets</a></li>
+          <li><a class="dropdown-item" href="#" data-view-target="banks"><i class="bi bi-bank me-2"></i>Manage Banks</a></li>
           <li><a class="dropdown-item" href="#" data-view-target="crypto"><i class="bi bi-shield-check me-2"></i>Key Infrastructure</a></li>
         </ul>
       </div>
@@ -159,8 +159,8 @@
             </a>
           </li>
           <li class="sidebar-item">
-            <a href="#" class="sidebar-link" data-view-target="wallets">
-              <i class="bi bi-wallet2"></i> Demo Wallets
+            <a href="#" class="sidebar-link" data-view-target="banks">
+              <i class="bi bi-bank"></i> Demo Banks
             </a>
           </li>
           <li class="sidebar-item">
@@ -511,10 +511,10 @@
         </div>
       </div>
 
-      <div class="view-pane d-none" id="view-wallets">
+      <div class="view-pane d-none" id="view-banks">
         <div class="d-flex justify-content-between align-items-center mb-4">
           <div>
-            <h3 class="fw-bold text-body mb-1">Synthetic Demo Wallets</h3>
+            <h3 class="fw-bold text-body mb-1">Synthetic Demo Banks</h3>
             <p class="text-muted small mb-0">Persistent account balances synchronized between MySQL and Java memory.</p>
           </div>
           <button class="btn btn-sm btn-outline-primary" onclick="VeyraApp.loadAccounts()">
@@ -531,11 +531,11 @@
                   <th>VPA ADDRESS</th>
                   <th>ACCOUNT NUMBER</th>
                   <th>AVAILABLE BALANCE</th>
-                  <th>WALLET STATUS</th>
+                  <th>BANK STATUS</th>
                   <th>VERSION (LOCK)</th>
                 </tr>
               </thead>
-              <tbody id="walletsTableBody">
+              <tbody id="banksTableBody">
                 <tr><td colspan="6" class="text-center text-muted py-4">Loading accounts...</td></tr>
               </tbody>
             </table>
@@ -603,14 +603,14 @@
         <form id="modalPaymentForm">
           <div class="modal-body">
             <div class="mb-3">
-              <label class="form-label small fw-semibold" for="modalTxSender">Sender Wallet (Paying Device)</label>
+              <label class="form-label small fw-semibold" for="modalTxSender">Sender Bank Account (Paying Device)</label>
               <select class="form-select" id="modalTxSender" required>
                 <option value="">Loading demo accounts...</option>
               </select>
             </div>
 
             <div class="mb-3">
-              <label class="form-label small fw-semibold" for="modalTxReceiver">Recipient Wallet (Beneficiary)</label>
+              <label class="form-label small fw-semibold" for="modalTxReceiver">Recipient Bank Account (Beneficiary)</label>
               <select class="form-select" id="modalTxReceiver" required>
                 <option value="">Loading demo accounts...</option>
               </select>
@@ -673,11 +673,11 @@
             <span id="dtlTxStatus">--</span>
           </div>
           <div class="d-flex justify-content-between mb-2">
-            <span class="text-muted">Sender Wallet:</span>
+            <span class="text-muted">Sender Bank Account:</span>
             <span class="fw-semibold" id="dtlSender">--</span>
           </div>
           <div class="d-flex justify-content-between mb-2">
-            <span class="text-muted">Recipient Wallet:</span>
+            <span class="text-muted">Recipient Bank Account:</span>
             <span class="fw-semibold" id="dtlReceiver">--</span>
           </div>
           <div class="d-flex justify-content-between mb-2">

@@ -65,7 +65,7 @@ runTest("1. Health API returns HEALTHY and UP for PHP, MySQL, and Java", functio
     return true;
 });
 
-runTest("2. Accounts API returns seeded demo wallets with real balances", function() use ($baseUrl) {
+runTest("2. Accounts API returns seeded demo bank accounts with real balances", function() use ($baseUrl) {
     $res = httpGet("{$baseUrl}/api/accounts.php");
     if ($res['code'] !== 200) return "HTTP {$res['code']}";
     $accs = $res['data'];

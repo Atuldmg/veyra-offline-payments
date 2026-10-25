@@ -108,7 +108,7 @@ php tests/verify_redesign.php
 
 ### Test Suite Results (12/12 Passing)
 - **Test 1**: Health API returns `HEALTHY` and `UP` for PHP, MySQL, and Java `[PASS]`
-- **Test 2**: Accounts API returns seeded demo wallets with real balances `[PASS]`
+- **Test 2**: Accounts API returns seeded demo bank accounts with real balances `[PASS]`
 - **Test 3**: Validation rejects negative amount with HTTP 422 `[PASS]`
 - **Test 4**: Validation rejects non-existent sender VPA `[PASS]`
 - **Test 5**: Validation rejects self-transfer `[PASS]`

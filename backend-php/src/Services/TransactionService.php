@@ -37,14 +37,14 @@ class TransactionService
         
         $sender = $this->accountRepo->findByVpa($senderVpa);
         if (!$sender) {
-            throw new Exception("Sender wallet '{$senderVpa}' not found.");
+            throw new Exception("Sender bank account '{$senderVpa}' not found.");
         }
         $receiver = $this->accountRepo->findByVpa($receiverVpa);
         if (!$receiver) {
-            throw new Exception("Receiver wallet '{$receiverVpa}' not found.");
+            throw new Exception("Receiver bank account '{$receiverVpa}' not found.");
         }
         if ($senderVpa === $receiverVpa) {
-            throw new Exception("Sender and receiver wallets must be different.");
+            throw new Exception("Sender and receiver bank accounts must be different.");
         }
         if ($amount <= 0) {
             throw new Exception("Transaction amount must be strictly greater than zero.");

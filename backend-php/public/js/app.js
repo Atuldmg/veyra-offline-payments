@@ -56,7 +56,7 @@ const VeyraApp = {
     if (viewName === 'transactions') this.loadTransactions();
     if (viewName === 'queue') this.loadQueue();
     if (viewName === 'mesh') this.loadMesh();
-    if (viewName === 'wallets') this.loadAccounts();
+    if (viewName === 'banks') this.loadAccounts();
     if (viewName === 'crypto') this.loadCryptoInfo();
   },
 
@@ -199,7 +199,7 @@ const VeyraApp = {
       senderSelects.forEach(sel => {
         if (!sel) return;
         const current = sel.value;
-        sel.innerHTML = '<option value="">-- Choose Sender Wallet --</option>';
+        sel.innerHTML = '<option value="">-- Choose Sender Bank Account --</option>';
         accounts.forEach(acc => {
           const opt = document.createElement('option');
           opt.value = acc.vpa;
@@ -212,7 +212,7 @@ const VeyraApp = {
       receiverSelects.forEach(sel => {
         if (!sel) return;
         const current = sel.value;
-        sel.innerHTML = '<option value="">-- Choose Beneficiary --</option>';
+        sel.innerHTML = '<option value="">-- Choose Beneficiary Bank Account --</option>';
         accounts.forEach(acc => {
           const opt = document.createElement('option');
           opt.value = acc.vpa;
@@ -223,7 +223,7 @@ const VeyraApp = {
       });
 
       
-      const tbody = document.getElementById('walletsTableBody');
+      const tbody = document.getElementById('banksTableBody');
       if (tbody) {
         tbody.innerHTML = '';
         accounts.forEach(acc => {
@@ -379,7 +379,7 @@ const VeyraApp = {
     }
 
     if (senderVpa === receiverVpa) {
-      this.showToast('Invalid Transfer', 'Sender and recipient wallets must be different.', 'warning');
+      this.showToast('Invalid Transfer', 'Sender and recipient bank accounts must be different.', 'warning');
       btn.disabled = false;
       btn.innerHTML = origText;
       return;
