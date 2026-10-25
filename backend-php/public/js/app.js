@@ -9,6 +9,8 @@ const VeyraApp = {
   cachedAccounts: [],
   cachedTransactions: [],
   cachedMeshDevices: [],
+  activeTransit: null,
+  transitTimer: null,
 
   async init() {
     this.setupNavigation();
@@ -110,6 +112,17 @@ const VeyraApp = {
           submitBtn.innerHTML = '<i class="bi bi-inbox-fill me-1"></i> Queue in Offline Mesh Only';
           submitBtn.className = 'btn btn-sm btn-outline-primary';
         }
+      });
+    }
+
+    const delaySelect = document.getElementById('txDeliveryDelay');
+    const delayDisplay = document.getElementById('txDelayDisplay');
+    if (delaySelect && delayDisplay) {
+      delaySelect.addEventListener('change', () => {
+        const val = parseInt(delaySelect.value, 10);
+        if (val === 0) delayDisplay.textContent = 'Instant (0s)';
+        else if (val >= 60) delayDisplay.textContent = `${(val / 60).toFixed(val % 60 ? 1 : 0)} min (${val}s)`;
+        else delayDisplay.textContent = `${val}s`;
       });
     }
   },
@@ -285,7 +298,7 @@ const VeyraApp = {
 
         txs.slice(0, 5).forEach(tx => {
           const tr = document.createElement('tr');
-          const statusBadge = this.getStatusBadge(tx.status);
+          const statusBadge = this.getStatusBadge(tx.status, tx);
           const dateStr = tx.created_at ? new Date(tx.created_at).toLocaleString() : 'Recent';
           const isPending = tx.status === 'QUEUED_FOR_SYNC' || tx.status === 'QUEUED' || tx.status === 'PENDING_VERIFICATION';
           const settleBtn = isPending ? `
@@ -329,7 +342,7 @@ const VeyraApp = {
             <td>${this.escapeHtml(tx.sender_vpa)}</td>
             <td>${this.escapeHtml(tx.receiver_vpa)}</td>
             <td><strong class="text-primary">₹${parseFloat(tx.amount).toFixed(2)}</strong></td>
-            <td>${this.getStatusBadge(tx.status)}</td>
+            <td>${this.getStatusBadge(tx.status, tx)}</td>
             <td><span class="badge bg-secondary">${tx.hop_count} hops</span></td>
             <td><small class="text-muted">${tx.settled_at || tx.created_at}</small></td>
             <td>
@@ -448,6 +461,7 @@ const VeyraApp = {
     const pin = (form.querySelector('[name="pin"]') || form.querySelector('#txPin') || form.querySelector('#modalTxPin'))?.value || '1234';
     const ttl = parseInt((form.querySelector('[name="ttl"]') || form.querySelector('#txTtl') || form.querySelector('#modalTxTtl'))?.value || '5', 10);
     const autoComplete = form.querySelector('#autoCompleteTransfer')?.checked ?? true;
+    const delaySeconds = parseInt(form.querySelector('#txDeliveryDelay')?.value || '60', 10);
 
     if (!senderVpa || !receiverVpa || !amount || amount <= 0) {
       this.showToast('Validation Error', 'Please choose sender, recipient, and a positive amount.', 'warning');
@@ -466,30 +480,264 @@ const VeyraApp = {
     try {
       const res = await VeyraAPI.createTransaction({ senderVpa, receiverVpa, amount, pin, ttl });
 
-      if (autoComplete) {
-        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Relaying & Settling...';
-        await VeyraAPI.runGossip();
-        await VeyraAPI.synchronizeBridges();
-        this.showToast('Transfer Completed & Settled', `₹${amount.toFixed(2)} sent from ${senderVpa} to ${receiverVpa} and settled against bank ledger.`, 'success');
-      } else {
-        this.showToast('Envelope Queued Offline', `Transaction Reference: ${res.data.transactionReference}`, 'success');
-      }
-
       if (modalId) {
         const modalEl = document.getElementById(modalId);
         if (modalEl) {
           bootstrap.Modal.getOrCreateInstance(modalEl).hide();
         }
       }
-
       form.reset();
-      await this.refreshAll();
+
+      if (!autoComplete) {
+        this.showToast('Envelope Queued Offline', `Transaction Reference: ${res.data.transactionReference}`, 'success');
+        await this.refreshAll();
+      } else if (delaySeconds === 0) {
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Relaying & Settling...';
+        await VeyraAPI.runGossip();
+        await VeyraAPI.synchronizeBridges();
+        this.showToast('Transfer Completed & Settled', `₹${amount.toFixed(2)} sent from ${senderVpa} to ${receiverVpa} and settled against bank ledger.`, 'success');
+        await this.refreshAll();
+      } else {
+        await this.startTransitSimulation({
+          txId: res.data.transactionId,
+          txRef: res.data.transactionReference,
+          senderVpa,
+          receiverVpa,
+          amount,
+          totalSeconds: delaySeconds
+        });
+      }
     } catch (err) {
       this.showToast('Payment Failed', err.message, 'danger');
     } finally {
       btn.disabled = false;
       btn.innerHTML = origText;
     }
+  },
+
+  async startTransitSimulation(data) {
+    if (this.transitTimer) clearInterval(this.transitTimer);
+
+    this.activeTransit = {
+      ...data,
+      remainingSeconds: data.totalSeconds,
+      startTime: Date.now(),
+      endTime: Date.now() + (data.totalSeconds * 1000)
+    };
+
+    const footer = document.getElementById('transitModalFooter');
+    if (footer) {
+      footer.innerHTML = `
+        <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal" id="btnMinimizeTransit">
+          <i class="bi bi-window-dash me-1"></i>Run in Background
+        </button>
+        <button type="button" class="btn btn-sm btn-success" id="btnSkipTransitDelay" onclick="VeyraApp.skipTransitDelay()">
+          <i class="bi bi-lightning-charge-fill me-1"></i>Settle Now (Fast-Forward)
+        </button>
+      `;
+    }
+
+    const progressEl = document.getElementById('transitProgressBar');
+    if (progressEl) {
+      progressEl.className = 'progress-bar progress-bar-striped progress-bar-animated bg-primary';
+    }
+
+    this.updateTransitUI();
+    this.showTransitModal();
+    this.updateTransitBanner(true);
+    await this.refreshAll();
+
+    this.transitTimer = setInterval(async () => {
+      if (!this.activeTransit) {
+        clearInterval(this.transitTimer);
+        this.transitTimer = null;
+        return;
+      }
+
+      const now = Date.now();
+      const remaining = Math.max(0, Math.round((this.activeTransit.endTime - now) / 1000));
+      this.activeTransit.remainingSeconds = remaining;
+
+      this.updateTransitUI();
+
+      if (remaining === Math.round(this.activeTransit.totalSeconds * 0.5)) {
+        VeyraAPI.runGossip().catch(() => {});
+      }
+
+      if (remaining <= 0) {
+        clearInterval(this.transitTimer);
+        this.transitTimer = null;
+        await this.finalizeTransitSettlement();
+      }
+    }, 1000);
+  },
+
+  showTransitModal() {
+    const modalEl = document.getElementById('meshTransitModal');
+    if (modalEl) {
+      bootstrap.Modal.getOrCreateInstance(modalEl).show();
+    }
+  },
+
+  updateTransitBanner(show = true) {
+    const banner = document.getElementById('inFlightTransitBanner');
+    if (!banner) return;
+    if (!show || !this.activeTransit) {
+      banner.classList.add('d-none');
+      return;
+    }
+    banner.classList.remove('d-none');
+    const mins = Math.floor(this.activeTransit.remainingSeconds / 60);
+    const secs = this.activeTransit.remainingSeconds % 60;
+    const timeStr = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+    const timeBadge = document.getElementById('inFlightBannerTime');
+    if (timeBadge) timeBadge.textContent = `${timeStr} remaining`;
+  },
+
+  updateTransitUI() {
+    if (!this.activeTransit) return;
+    const { amount, senderVpa, receiverVpa, totalSeconds, remainingSeconds } = this.activeTransit;
+    const elapsed = totalSeconds - remainingSeconds;
+    const pct = Math.min(100, Math.round((elapsed / totalSeconds) * 100));
+    const mins = Math.floor(remainingSeconds / 60);
+    const secs = remainingSeconds % 60;
+    const timeStr = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+
+    const amountEl = document.getElementById('transitAmountDisplay');
+    if (amountEl) amountEl.textContent = `₹${parseFloat(amount).toLocaleString('en-IN', {minimumFractionDigits: 2})}`;
+
+    const routeEl = document.getElementById('transitRouteDisplay');
+    if (routeEl) routeEl.textContent = `${senderVpa} → ${receiverVpa}`;
+
+    const countdownEl = document.getElementById('transitCountdownDisplay');
+    if (countdownEl) countdownEl.textContent = timeStr;
+
+    const progressEl = document.getElementById('transitProgressBar');
+    if (progressEl) {
+      progressEl.style.width = `${pct}%`;
+      progressEl.setAttribute('aria-valuenow', pct);
+    }
+
+    this.updateTransitBanner(true);
+
+    const subtext = document.getElementById('transitStatusSubtext');
+    const setStep = (stepNum, state, iconClass) => {
+      const badge = document.getElementById(`transitStep${stepNum}Badge`);
+      const icon = document.getElementById(`transitStep${stepNum}Icon`);
+      if (!badge) return;
+      if (state === 'done') {
+        badge.className = 'badge bg-success-subtle text-success';
+        badge.innerHTML = '<i class="bi bi-check2 me-1"></i>Done';
+        if (icon) icon.className = `bi bi-check-circle-fill text-success me-3 fs-5`;
+      } else if (state === 'active') {
+        badge.className = 'badge bg-primary-subtle text-primary';
+        badge.innerHTML = '<span class="spinner-border spinner-border-sm me-1" style="width:0.6rem;height:0.6rem"></span>Active';
+        if (icon) icon.className = `bi ${iconClass} text-primary me-3 fs-5`;
+      } else {
+        badge.className = 'badge bg-secondary-subtle text-secondary';
+        badge.textContent = 'Pending';
+        if (icon) icon.className = `bi ${iconClass} text-muted me-3 fs-5`;
+      }
+    };
+
+    if (pct < 20) {
+      if (subtext) subtext.textContent = 'Phase 1: Sealing AES-256-GCM envelope and generating zero-knowledge proof...';
+      setStep(1, 'active', 'bi-shield-lock-fill');
+      setStep(2, 'pending', 'bi-broadcast');
+      setStep(3, 'pending', 'bi-diagram-3');
+      setStep(4, 'pending', 'bi-router');
+      setStep(5, 'pending', 'bi-bank2');
+    } else if (pct < 45) {
+      if (subtext) subtext.textContent = 'Phase 2: Local BLE peer discovery & multi-peer hop broadcast...';
+      setStep(1, 'done', 'bi-shield-lock-fill');
+      setStep(2, 'active', 'bi-broadcast');
+      setStep(3, 'pending', 'bi-diagram-3');
+      setStep(4, 'pending', 'bi-router');
+      setStep(5, 'pending', 'bi-bank2');
+    } else if (pct < 75) {
+      if (subtext) subtext.textContent = 'Phase 3: Multi-hop store-and-forward mesh routing across stranger nodes...';
+      setStep(1, 'done', 'bi-shield-lock-fill');
+      setStep(2, 'done', 'bi-broadcast');
+      setStep(3, 'active', 'bi-diagram-3');
+      setStep(4, 'pending', 'bi-router');
+      setStep(5, 'pending', 'bi-bank2');
+    } else if (pct < 95) {
+      if (subtext) subtext.textContent = 'Phase 4: 4G gateway bridge encountered (phone-bridge) & uplink transmission...';
+      setStep(1, 'done', 'bi-shield-lock-fill');
+      setStep(2, 'done', 'bi-broadcast');
+      setStep(3, 'done', 'bi-diagram-3');
+      setStep(4, 'active', 'bi-router');
+      setStep(5, 'pending', 'bi-bank2');
+    } else {
+      if (subtext) subtext.textContent = 'Phase 5: Central bank RSA key authentication & double-entry ledger mutation...';
+      setStep(1, 'done', 'bi-shield-lock-fill');
+      setStep(2, 'done', 'bi-broadcast');
+      setStep(3, 'done', 'bi-diagram-3');
+      setStep(4, 'done', 'bi-router');
+      setStep(5, 'active', 'bi-bank2');
+    }
+
+    document.querySelectorAll('.active-transit-timer').forEach(el => {
+      el.textContent = `${remainingSeconds}s`;
+    });
+  },
+
+  async skipTransitDelay() {
+    if (!this.activeTransit) return;
+    if (this.transitTimer) {
+      clearInterval(this.transitTimer);
+      this.transitTimer = null;
+    }
+    await this.finalizeTransitSettlement();
+  },
+
+  async finalizeTransitSettlement() {
+    if (!this.activeTransit) return;
+    const { txId, amount, receiverVpa } = this.activeTransit;
+
+    const countdownEl = document.getElementById('transitCountdownDisplay');
+    if (countdownEl) countdownEl.innerHTML = '<span class="text-success"><i class="bi bi-check-circle-fill me-2"></i>Settled</span>';
+
+    const subtext = document.getElementById('transitStatusSubtext');
+    if (subtext) subtext.innerHTML = `<strong class="text-success">Payment Successfully Settled!</strong> Verified against bank ledger.`;
+
+    const progressEl = document.getElementById('transitProgressBar');
+    if (progressEl) {
+      progressEl.style.width = '100%';
+      progressEl.className = 'progress-bar bg-success';
+    }
+
+    for (let i = 1; i <= 5; i++) {
+      const badge = document.getElementById(`transitStep${i}Badge`);
+      const icon = document.getElementById(`transitStep${i}Icon`);
+      if (badge) {
+        badge.className = 'badge bg-success-subtle text-success';
+        badge.innerHTML = '<i class="bi bi-check2 me-1"></i>Done';
+      }
+      if (icon) icon.className = 'bi bi-check-circle-fill text-success me-3 fs-5';
+    }
+
+    const footer = document.getElementById('transitModalFooter');
+    if (footer) {
+      footer.innerHTML = `
+        <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-sm btn-primary" data-bs-dismiss="modal" onclick="VeyraApp.switchView('transactions')">
+          <i class="bi bi-journal-text me-1"></i>View in Transaction Ledger
+        </button>
+      `;
+    }
+
+    try {
+      await VeyraAPI.runGossip();
+      await VeyraAPI.synchronizeBridges(txId);
+      this.showToast('Transfer Completed & Settled', `₹${parseFloat(amount).toFixed(2)} delivered to ${receiverVpa} and settled against bank ledger.`, 'success');
+    } catch (err) {
+      this.showToast('Settlement Notice', err.message, 'warning');
+    }
+
+    this.updateTransitBanner(false);
+    this.activeTransit = null;
+    await this.refreshAll();
   },
 
   async completeTransaction(txId = null) {
@@ -591,7 +839,10 @@ const VeyraApp = {
     modal.show();
   },
 
-  getStatusBadge(status) {
+  getStatusBadge(status, tx = null) {
+    if (this.activeTransit && tx && tx.id == this.activeTransit.txId) {
+      return `<span class="badge-soft-warning"><span class="spinner-border spinner-border-sm me-1" style="width:0.6rem;height:0.6rem"></span>In Transit (<span class="active-transit-timer">${this.activeTransit.remainingSeconds}s</span>)</span>`;
+    }
     if (status === 'SYNCHRONIZED' || status === 'SETTLED') {
       return '<span class="badge-soft-success">Settled</span>';
     }
