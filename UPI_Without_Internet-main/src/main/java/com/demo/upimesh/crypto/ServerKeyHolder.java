@@ -11,16 +11,7 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.util.Base64;
 
-/**
- * Holds the server's RSA keypair.
- *
- * In production, the private key would live in an HSM (Hardware Security Module)
- * or at least a KMS like AWS KMS / HashiCorp Vault. NEVER in the JAR or source.
- *
- * For this demo we generate a fresh keypair on every startup. The public key is
- * exposed via /api/server-key so the (simulated) sender devices can use it to
- * encrypt payloads.
- */
+
 @Component
 public class ServerKeyHolder {
 

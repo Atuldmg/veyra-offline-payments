@@ -10,15 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import java.math.BigDecimal;
 import java.util.*;
 
-/**
- * Public REST surface.
- *
- * The endpoints split into three groups:
- *   /api/server-key      → so simulated senders can fetch the server's public key
- *   /api/mesh/*          → simulator endpoints (inject, gossip, flush)
- *   /api/bridge/ingest   → THE real production endpoint a real bridge node would hit
- *   /api/accounts, /api/transactions → for the dashboard
- */
+
 @RestController
 @RequestMapping("/api")
 public class ApiController {
@@ -31,8 +23,6 @@ public class ApiController {
     @Autowired private TransactionRepository txRepo;
     @Autowired private IdempotencyService idempotency;
 
-    // ------------------------------------------------------------------ key
-
     @GetMapping("/server-key")
     public Map<String, String> getServerPublicKey() {
         return Map.of(
@@ -42,12 +32,6 @@ public class ApiController {
         );
     }
 
-    // ---------------------------------------------------------------- demo
-
-    /**
-     * Demo helper: build a packet on the server (simulating a sender phone)
-     * and inject it into the mesh at the given device.
-     */
     @PostMapping("/demo/send")
     public ResponseEntity<?> demoSend(@RequestBody DemoSendRequest req) throws Exception {
         MeshPacket packet = demo.createPacket(
@@ -73,8 +57,6 @@ public class ApiController {
         public Integer ttl;
         public String startDevice;
     }
-
-    // -------------------------------------------------------------- mesh sim
 
     @GetMapping("/mesh/state")
     public Map<String, Object> meshState() {
@@ -104,20 +86,13 @@ public class ApiController {
         );
     }
 
-    /**
-     * "All bridge nodes simultaneously walk outside and get 4G."
-     * They all upload everything they hold to /api/bridge/ingest.
-     *
-     * THIS is the moment the duplicate-storm idempotency case is tested:
-     * if multiple bridge nodes hold the same packet, the server gets multiple
-     * concurrent POSTs of the same ciphertext, and only one should settle.
-     */
+    
     @PostMapping("/mesh/flush")
     public Map<String, Object> meshFlush() {
         List<MeshSimulatorService.BridgeUpload> uploads = mesh.collectBridgeUploads();
 
         List<Map<String, Object>> results = new ArrayList<>();
-        // Upload them in parallel to actually exercise concurrent idempotency.
+        
         uploads.parallelStream().forEach(up -> {
             BridgeIngestionService.IngestResult r =
                     bridge.ingest(up.packet(), up.bridgeNodeId(), 5 - up.packet().getTtl());
@@ -145,13 +120,6 @@ public class ApiController {
         return Map.of("status", "mesh and idempotency cache cleared");
     }
 
-    // -------------------------------------------------------------- bridge
-
-    /**
-     * THE PRODUCTION ENDPOINT.
-     * In a real deployment, the Android app's bridge logic POSTs here whenever
-     * the device has internet and is holding mesh packets.
-     */
     @PostMapping("/bridge/ingest")
     public ResponseEntity<?> ingest(
             @RequestBody MeshPacket packet,
@@ -161,8 +129,6 @@ public class ApiController {
         BridgeIngestionService.IngestResult r = bridge.ingest(packet, bridgeNodeId, hopCount);
         return ResponseEntity.ok(r);
     }
-
-    // ------------------------------------------------------------- accounts
 
     @GetMapping("/accounts")
     public List<Account> listAccounts() {

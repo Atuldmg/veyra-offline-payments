@@ -15,7 +15,6 @@ header('Content-Type: application/json');
 
 $repo = new AccountRepository();
 
-// Sync balances with Java service if online
 $javaClient = new JavaClient();
 $javaAccounts = $javaClient->getAccounts();
 if ($javaAccounts && is_array($javaAccounts)) {

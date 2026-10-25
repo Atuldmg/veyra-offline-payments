@@ -34,7 +34,7 @@ class TransactionService
         string $pin = '1234',
         int $ttl = 5
     ): array {
-        // Validate accounts
+        
         $sender = $this->accountRepo->findByVpa($senderVpa);
         if (!$sender) {
             throw new Exception("Sender wallet '{$senderVpa}' not found.");
@@ -50,7 +50,7 @@ class TransactionService
             throw new Exception("Transaction amount must be strictly greater than zero.");
         }
 
-        // Call Java Spring Boot service to generate packet and inject into phone-alice
+        
         $sendRes = $this->javaClient->sendPayment($senderVpa, $receiverVpa, $amount, $pin);
         if (!$sendRes || empty($sendRes['packetId'])) {
             throw new Exception("Java Verification & Mesh Service unavailable or rejected packet.");
@@ -123,16 +123,16 @@ class TransactionService
         $uploadsAttempted = $flushRes['uploadsAttempted'] ?? 0;
         $results = $flushRes['results'] ?? [];
 
-        // Also fetch latest transactions and accounts from Java to sync with MySQL
+        
         $javaTxs = $this->javaClient->getTransactions() ?? [];
         $javaAccounts = $this->javaClient->getAccounts() ?? [];
 
-        // Sync account balances in MySQL
+        
         if (!empty($javaAccounts)) {
             $this->accountRepo->syncBalancesFromExternal($javaAccounts);
         }
 
-        // Process results and sync ledger states in MySQL
+        
         $db = Database::getConnection();
         foreach ($results as $res) {
             $packetId = $res['packetId'] ?? null;
@@ -141,7 +141,7 @@ class TransactionService
             $reason = $res['reason'] ?? null;
 
             if ($packetId) {
-                // Find matching transaction by packet_id (exact or 8-char prefix from Java)
+                
                 $stmt = $db->prepare("SELECT * FROM transactions WHERE packet_id = :pid OR packet_id LIKE :pid_prefix LIMIT 1");
                 $stmt->execute([
                     'pid'        => $packetId,
@@ -162,7 +162,7 @@ class TransactionService
             }
         }
 
-        // Reconcile any remaining unsettled transactions with confirmed Java ledger records
+        
         foreach ($javaTxs as $jTx) {
             $jStatus = ($jTx['status'] === 'SETTLED') ? 'SYNCHRONIZED' : (($jTx['status'] === 'REJECTED') ? 'REJECTED' : 'CREATED');
             $findStmt = $db->prepare("

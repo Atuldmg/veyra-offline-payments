@@ -1,10 +1,7 @@
-/**
- * VEYRA — API Client Service
- * Interacts with PHP API Gateway endpoints
- */
+
 
 const VeyraAPI = {
-  // Uses relative URLs since frontend is served directly by PHP
+  
   baseUrl: '',
 
   async request(endpoint, options = {}) {

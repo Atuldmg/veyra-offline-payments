@@ -6,31 +6,28 @@
   <title>VEYRA — Secure Transactions. Resilient Networks.</title>
   <meta name="description" content="Offline-capable transaction messaging, Bluetooth Low Energy mesh routing, and cryptographic verification dashboard.">
 
-  <!-- Google Fonts: Inter & JetBrains Mono -->
+  
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 
-  <!-- Bootstrap 5.3 & Bootstrap Icons -->
+  
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
-  <!-- Custom CampusConnect-inspired Dashboard Design System -->
+  
   <link rel="stylesheet" href="css/dashboard.css">
 </head>
 <body>
 
-  <!-- ========================================================================= -->
-  <!-- TOP NAVIGATION BAR (Matching Reference Screenshot)                        -->
-  <!-- ========================================================================= -->
   <header class="veyra-navbar">
     <div class="d-flex align-items-center gap-3">
-      <!-- Mobile Sidebar Toggle -->
+      
       <button class="btn btn-sm btn-outline-secondary d-lg-none" id="sidebarToggleBtn" aria-label="Toggle navigation">
         <i class="bi bi-list fs-5"></i>
       </button>
 
-      <!-- VEYRA Logo & Wordmark -->
+      
       <a class="navbar-brand d-flex align-items-center gap-2 text-decoration-none" href="#" onclick="VeyraApp.switchView('dashboard'); return false;">
         <svg width="28" height="28" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
           <polygon points="50,5 92,26 92,74 50,95 8,74 8,26" fill="#0d6efd" stroke="#0b5ed7" stroke-width="4"/>
@@ -41,7 +38,7 @@
         <span class="brand-portal-badge ms-1">PORTAL</span>
       </a>
 
-      <!-- Desktop Nav Links -->
+      
       <nav class="d-none d-md-flex align-items-center gap-1 ms-4">
         <a href="#" class="veyra-nav-link active" data-view-target="dashboard">Dashboard</a>
         <a href="#" class="veyra-nav-link" data-view-target="transactions">Ledger History</a>
@@ -51,13 +48,13 @@
       </nav>
     </div>
 
-    <!-- Right Controls: Health Badge, Theme Selector & Operator Profile -->
+    
     <div class="d-flex align-items-center gap-3">
       <span id="topbarHealthBadge" class="badge-soft-success px-2 py-1 rounded-pill small">
         <i class="bi bi-circle-fill me-1" style="font-size:0.5rem"></i> HEALTHY
       </span>
 
-      <!-- 3 Theme Modes Selector (Light, Dark, System) -->
+      
       <div class="dropdown">
         <button class="btn btn-sm btn-outline-secondary dropdown-toggle d-flex align-items-center" type="button" id="themeDropdownBtn" data-bs-toggle="dropdown" aria-expanded="false">
           <i class="bi bi-circle-half me-2" id="themeCurrentIcon"></i>
@@ -85,7 +82,7 @@
         </ul>
       </div>
 
-      <!-- Operator Profile Pill -->
+      
       <div class="dropdown">
         <button class="btn btn-sm btn-outline-primary dropdown-toggle d-flex align-items-center gap-2 rounded-pill px-3 py-1" type="button" id="operatorDropdownBtn" data-bs-toggle="dropdown" aria-expanded="false">
           <i class="bi bi-person-circle"></i>
@@ -104,18 +101,15 @@
     </div>
   </header>
 
-  <!-- Mobile Sidebar Backdrop -->
+  
   <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
 
-  <!-- Layout Body: Sidebar + Main Content -->
+  
   <div class="d-flex flex-grow-1">
 
-    <!-- ======================================================================= -->
-    <!-- LEFT SIDEBAR (Matching Reference Screenshot)                            -->
-    <!-- ======================================================================= -->
     <aside class="veyra-sidebar" id="veyraSidebar">
       <div>
-        <!-- Profile Widget -->
+        
         <div class="sidebar-profile-widget">
           <div class="sidebar-profile-icon">
             <i class="bi bi-terminal-fill"></i>
@@ -126,7 +120,7 @@
           </div>
         </div>
 
-        <!-- Section 1: Transaction Tools -->
+        
         <div class="sidebar-heading">TRANSACTION TOOLS</div>
         <ul class="sidebar-menu">
           <li class="sidebar-item">
@@ -156,7 +150,7 @@
           </li>
         </ul>
 
-        <!-- Section 2: Security & Audit -->
+        
         <div class="sidebar-heading">SECURITY &amp; AUDIT</div>
         <ul class="sidebar-menu">
           <li class="sidebar-item">
@@ -177,7 +171,7 @@
         </ul>
       </div>
 
-      <!-- Sidebar Footer -->
+      
       <div class="pt-3 border-top border-secondary-subtle">
         <a href="#" class="sidebar-link text-danger" id="sidebarResetMesh">
           <i class="bi bi-arrow-counterclockwise text-danger"></i> Reset Mesh &amp; Buffers
@@ -185,17 +179,11 @@
       </div>
     </aside>
 
-    <!-- ======================================================================= -->
-    <!-- MAIN CONTENT VIEWPORT                                                   -->
-    <!-- ======================================================================= -->
     <main class="veyra-main-content">
 
-      <!-- ===================================================================== -->
-      <!-- PANE 1: MAIN DASHBOARD VIEW (Default)                                 -->
-      <!-- ===================================================================== -->
       <div class="view-pane" id="view-dashboard">
 
-        <!-- Welcome Banner (Matching Reference Screenshot) -->
+        
         <div class="mb-4">
           <h2 class="fw-bold tracking-tight mb-1 text-body">Welcome back, Alice Sharma!</h2>
           <div class="d-flex flex-wrap align-items-center gap-3 text-muted small">
@@ -207,9 +195,9 @@
           </div>
         </div>
 
-        <!-- 4 Stat Summary Cards (Matching Reference Screenshot Row) -->
+        
         <div class="row g-3 mb-4">
-          <!-- Card 1: Total Transactions -->
+          
           <div class="col-xl-3 col-sm-6">
             <div class="metric-card">
               <div>
@@ -223,7 +211,7 @@
             </div>
           </div>
 
-          <!-- Card 2: Pending Verification -->
+          
           <div class="col-xl-3 col-sm-6">
             <div class="metric-card">
               <div>
@@ -237,7 +225,7 @@
             </div>
           </div>
 
-          <!-- Card 3: Settled & Verified -->
+          
           <div class="col-xl-3 col-sm-6">
             <div class="metric-card">
               <div>
@@ -251,7 +239,7 @@
             </div>
           </div>
 
-          <!-- Card 4: Virtual Mesh Relays -->
+          
           <div class="col-xl-3 col-sm-6">
             <div class="metric-card">
               <div>
@@ -266,12 +254,12 @@
           </div>
         </div>
 
-        <!-- Main Content 2-Column Grid (8 cols / 4 cols) -->
+        
         <div class="row g-3">
 
-          <!-- Left Column (8 cols): Recent Transactions & Quick Actions -->
+          
           <div class="col-lg-8">
-            <!-- Recent Transactions Table Card -->
+            
             <div class="card-veyra">
               <div class="card-veyra-header">
                 <h5 class="card-veyra-title text-body">
@@ -300,7 +288,7 @@
               </div>
             </div>
 
-            <!-- Quick Actions Bar (Matching Reference Screenshot bottom row) -->
+            
             <div class="card-veyra">
               <div class="card-veyra-header">
                 <h5 class="card-veyra-title text-body">
@@ -339,9 +327,9 @@
             </div>
           </div>
 
-          <!-- Right Column (4 cols): Virtual Relays & System Notices -->
+          
           <div class="col-lg-4">
-            <!-- Virtual Mesh Relays Card -->
+            
             <div class="card-veyra">
               <div class="card-veyra-header">
                 <h5 class="card-veyra-title text-body">
@@ -356,7 +344,7 @@
               </div>
             </div>
 
-            <!-- Notice Board Card (Matching Reference Screenshot) -->
+            
             <div class="card-veyra">
               <div class="card-veyra-header">
                 <h5 class="card-veyra-title text-body">
@@ -397,9 +385,6 @@
         </div>
       </div>
 
-      <!-- ===================================================================== -->
-      <!-- PANE 2: FULL TRANSACTION LEDGER HISTORY                               -->
-      <!-- ===================================================================== -->
       <div class="view-pane d-none" id="view-transactions">
         <div class="d-flex justify-content-between align-items-center mb-4">
           <div>
@@ -434,9 +419,6 @@
         </div>
       </div>
 
-      <!-- ===================================================================== -->
-      <!-- PANE 3: OFFLINE QUEUE VAULT                                           -->
-      <!-- ===================================================================== -->
       <div class="view-pane d-none" id="view-queue">
         <div class="d-flex justify-content-between align-items-center mb-4">
           <div>
@@ -471,9 +453,6 @@
         </div>
       </div>
 
-      <!-- ===================================================================== -->
-      <!-- PANE 4: MESH RELAYS & TOPOLOGY                                        -->
-      <!-- ===================================================================== -->
       <div class="view-pane d-none" id="view-mesh">
         <div class="d-flex justify-content-between align-items-center mb-4">
           <div>
@@ -532,9 +511,6 @@
         </div>
       </div>
 
-      <!-- ===================================================================== -->
-      <!-- PANE 5: DEMO WALLETS & ACCOUNTS                                       -->
-      <!-- ===================================================================== -->
       <div class="view-pane d-none" id="view-wallets">
         <div class="d-flex justify-content-between align-items-center mb-4">
           <div>
@@ -567,9 +543,6 @@
         </div>
       </div>
 
-      <!-- ===================================================================== -->
-      <!-- PANE 6: CRYPTOGRAPHIC INSPECTOR                                       -->
-      <!-- ===================================================================== -->
       <div class="view-pane d-none" id="view-crypto">
         <div class="mb-4">
           <h3 class="fw-bold text-body mb-1">Cryptographic &amp; Idempotency Architecture</h3>
@@ -615,12 +588,9 @@
     </main>
   </div>
 
-  <!-- Toast Notification Container -->
+  
   <div class="toast-container position-fixed bottom-0 end-0 p-3" id="toastContainer" style="z-index: 1090;"></div>
 
-  <!-- ========================================================================= -->
-  <!-- MODAL: NEW TRANSACTION COMPOSER                                           -->
-  <!-- ========================================================================= -->
   <div class="modal fade" id="newTransactionModal" tabindex="-1" aria-labelledby="newTransactionModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content card-veyra border-0">
@@ -684,9 +654,6 @@
     </div>
   </div>
 
-  <!-- ========================================================================= -->
-  <!-- MODAL: TRANSACTION DETAILS INSPECTOR                                      -->
-  <!-- ========================================================================= -->
   <div class="modal fade" id="txDetailsModal" tabindex="-1" aria-labelledby="txDetailsModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content card-veyra border-0">
@@ -750,9 +717,9 @@
     </div>
   </div>
 
-  <!-- Bootstrap 5.3 Bundle JS -->
+  
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-  <!-- Application JS Modules -->
+  
   <script src="js/theme.js"></script>
   <script src="js/api.js"></script>
   <script src="js/app.js"></script>

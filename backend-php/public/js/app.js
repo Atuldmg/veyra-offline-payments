@@ -1,7 +1,4 @@
-/**
- * VEYRA — Application Controller & View Orchestrator
- * Integrates Bootstrap 5 dashboard components with PHP API backend
- */
+
 
 document.addEventListener('DOMContentLoaded', () => {
   VeyraApp.init();
@@ -19,26 +16,26 @@ const VeyraApp = {
     this.setupQuickActions();
     this.setupSidebarToggle();
 
-    // Initial data load
+    
     await this.refreshAll();
 
-    // Start background telemetry polling (8s)
+    
     this.pollTimer = setInterval(() => this.pollTelemetry(), 8000);
   },
 
   setupNavigation() {
-    // Sidebar links navigation
+    
     document.querySelectorAll('[data-view-target]').forEach(link => {
       link.addEventListener('click', (e) => {
         e.preventDefault();
         const targetView = link.getAttribute('data-view-target');
         this.switchView(targetView);
 
-        // Update active class on sidebar
+        
         document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
         link.classList.add('active');
 
-        // Close mobile sidebar if open
+        
         document.getElementById('veyraSidebar')?.classList.remove('show');
         document.getElementById('sidebarBackdrop')?.classList.remove('show');
       });
@@ -46,16 +43,16 @@ const VeyraApp = {
   },
 
   switchView(viewName) {
-    // Hide all view panes
+    
     document.querySelectorAll('.view-pane').forEach(el => el.classList.add('d-none'));
 
-    // Show target view pane
+    
     const targetEl = document.getElementById(`view-${viewName}`);
     if (targetEl) {
       targetEl.classList.remove('d-none');
     }
 
-    // Specific pane refreshes
+    
     if (viewName === 'transactions') this.loadTransactions();
     if (viewName === 'queue') this.loadQueue();
     if (viewName === 'mesh') this.loadMesh();
@@ -89,13 +86,13 @@ const VeyraApp = {
       form.addEventListener('submit', (e) => this.handlePaymentSubmit(e));
     }
 
-    // Modal payment form
+    
     const modalForm = document.getElementById('modalPaymentForm');
     if (modalForm) {
       modalForm.addEventListener('submit', (e) => this.handlePaymentSubmit(e, 'newTransactionModal'));
     }
 
-    // TTL slider display
+    
     const ttlRange = document.getElementById('txTtl');
     const ttlDisplay = document.getElementById('txTtlDisplay');
     if (ttlRange && ttlDisplay) {
@@ -106,26 +103,26 @@ const VeyraApp = {
   },
 
   setupQuickActions() {
-    // Action 1: New Payment
+    
     document.getElementById('actionNewPayment')?.addEventListener('click', (e) => {
       e.preventDefault();
       const modal = new bootstrap.Modal(document.getElementById('newTransactionModal'));
       modal.show();
     });
 
-    // Action 2: Run Gossip Round
+    
     document.getElementById('actionRunGossip')?.addEventListener('click', async (e) => {
       e.preventDefault();
       await this.triggerGossip();
     });
 
-    // Action 3: Flush Bridges
+    
     document.getElementById('actionFlushBridges')?.addEventListener('click', async (e) => {
       e.preventDefault();
       await this.triggerBridgeSync();
     });
 
-    // Action 4: Inspect Crypto
+    
     document.getElementById('actionInspectKeys')?.addEventListener('click', (e) => {
       e.preventDefault();
       const modal = new bootstrap.Modal(document.getElementById('cryptoInspectorModal'));
@@ -133,7 +130,7 @@ const VeyraApp = {
       modal.show();
     });
 
-    // Reset Mesh button in sidebar footer
+    
     document.getElementById('sidebarResetMesh')?.addEventListener('click', async (e) => {
       e.preventDefault();
       if (confirm('Reset virtual Bluetooth mesh and clear offline outbox?')) {
@@ -143,7 +140,7 @@ const VeyraApp = {
       }
     });
 
-    // Tamper Test button in Crypto Modal
+    
     document.getElementById('btnTamperTest')?.addEventListener('click', () => {
       this.runTamperTest();
     });
@@ -164,7 +161,7 @@ const VeyraApp = {
       await this.loadMesh(true);
       await this.loadTransactions(true);
     } catch (e) {
-      // background poll catch
+      
     }
   },
 
@@ -195,7 +192,7 @@ const VeyraApp = {
       const accounts = await VeyraAPI.getAccounts();
       this.cachedAccounts = accounts;
 
-      // Populate selects in both modal and embedded payment forms
+      
       const senderSelects = [document.getElementById('txSender'), document.getElementById('modalTxSender')];
       const receiverSelects = [document.getElementById('txReceiver'), document.getElementById('modalTxReceiver')];
 
@@ -225,7 +222,7 @@ const VeyraApp = {
         if (current) sel.value = current;
       });
 
-      // Render demo wallets table if visible
+      
       const tbody = document.getElementById('walletsTableBody');
       if (tbody) {
         tbody.innerHTML = '';
@@ -254,7 +251,7 @@ const VeyraApp = {
       const metrics = res.metrics || {};
       this.cachedTransactions = txs;
 
-      // Update Top Metric Cards (CampusConnect 4-card row)
+      
       const elTotal = document.getElementById('metricTotalTxs');
       const elPending = document.getElementById('metricPendingTxs');
       const elSettled = document.getElementById('metricSettledTxs');
@@ -263,7 +260,7 @@ const VeyraApp = {
       if (elPending) elPending.textContent = (metrics.CREATED || 0) + (metrics.QUEUED_FOR_SYNC || 0) + (metrics.PENDING_VERIFICATION || 0);
       if (elSettled) elSettled.textContent = metrics.SYNCHRONIZED || 0;
 
-      // Render Recent Transactions Table (Main Column)
+      
       const tbody = document.getElementById('recentTransactionsBody');
       if (tbody) {
         tbody.innerHTML = '';
@@ -294,7 +291,7 @@ const VeyraApp = {
         });
       }
 
-      // Render Full Transactions History table if visible
+      
       const fullTbody = document.getElementById('fullTransactionsBody');
       if (fullTbody) {
         fullTbody.innerHTML = '';
@@ -324,11 +321,11 @@ const VeyraApp = {
       const devices = mesh.devices || [];
       this.cachedMeshDevices = devices;
 
-      // Update Active Mesh Peers Metric Card
+      
       const elPeers = document.getElementById('metricMeshPeers');
       if (elPeers) elPeers.textContent = devices.length || 5;
 
-      // Render Mesh Nodes list in right column (CampusConnect style)
+      
       const container = document.getElementById('meshNodesContainer');
       if (container) {
         container.innerHTML = '';
@@ -392,7 +389,7 @@ const VeyraApp = {
       const res = await VeyraAPI.createTransaction({ senderVpa, receiverVpa, amount, pin, ttl });
       this.showToast('Envelope Created & Injected', `Transaction Reference: ${res.data.transactionReference}`, 'success');
 
-      // Close modal if open
+      
       if (modalId) {
         const modalEl = document.getElementById(modalId);
         bootstrap.Modal.getInstance(modalEl)?.hide();

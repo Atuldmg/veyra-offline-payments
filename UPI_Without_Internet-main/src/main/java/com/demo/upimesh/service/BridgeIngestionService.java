@@ -12,18 +12,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 
-/**
- * Orchestrates the full server-side pipeline for one inbound packet from a
- * bridge node:
- *
- *   1. Hash the ciphertext.
- *   2. Try to claim that hash via the idempotency cache.
- *      - If already claimed: this is a duplicate. Drop it.
- *   3. Decrypt the ciphertext with the server's private key.
- *      - If decryption fails: tampered or junk. Reject.
- *   4. Check freshness — reject if signedAt is too old (replay protection).
- *   5. Hand off to SettlementService for the actual debit/credit.
- */
+
 @Service
 public class BridgeIngestionService {
 
@@ -40,14 +29,14 @@ public class BridgeIngestionService {
         try {
             String packetHash = crypto.hashCiphertext(packet.getCiphertext());
 
-            // ---- Idempotency gate ----
+            
             if (!idempotency.claim(packetHash)) {
                 log.info("DUPLICATE packet {} from bridge {} — dropped",
                         packetHash.substring(0, 12) + "...", bridgeNodeId);
                 return IngestResult.duplicate(packetHash);
             }
 
-            // ---- Decrypt ----
+            
             PaymentInstruction instruction;
             try {
                 instruction = crypto.decrypt(packet.getCiphertext());
@@ -57,18 +46,18 @@ public class BridgeIngestionService {
                 return IngestResult.invalid(packetHash, "decryption_failed");
             }
 
-            // ---- Freshness check (replay protection) ----
+            
             long ageSeconds = (Instant.now().toEpochMilli() - instruction.getSignedAt()) / 1000;
             if (ageSeconds > maxAgeSeconds) {
                 log.warn("Packet {} too old ({}s), rejected",
                         packetHash.substring(0, 12) + "...", ageSeconds);
                 return IngestResult.invalid(packetHash, "stale_packet");
             }
-            if (ageSeconds < -300) { // small clock-skew tolerance
+            if (ageSeconds < -300) { 
                 return IngestResult.invalid(packetHash, "future_dated");
             }
 
-            // ---- Settle ----
+            
             Transaction tx = settlement.settle(instruction, packetHash, bridgeNodeId, hopCount);
             return IngestResult.settled(packetHash, tx);
 

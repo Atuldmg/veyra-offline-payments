@@ -5,11 +5,7 @@ import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.Instant;
 
-/**
- * Permanent record of every settled transaction. Once written, never modified.
- * The packetHash is the idempotency key — uniqueness is enforced at the DB level
- * as a defense-in-depth fallback if the Redis-style cache layer ever fails.
- */
+
 @Entity
 @Table(name = "transactions",
         indexes = { @Index(name = "idx_packet_hash", columnList = "packetHash", unique = true) })
@@ -20,7 +16,7 @@ public class Transaction {
     private Long id;
 
     @Column(nullable = false, unique = true, length = 64)
-    private String packetHash; // SHA-256 hex of the encrypted packet
+    private String packetHash; 
 
     @Column(nullable = false)
     private String senderVpa;
@@ -32,16 +28,16 @@ public class Transaction {
     private BigDecimal amount;
 
     @Column(nullable = false)
-    private Instant signedAt; // When the sender originally signed it (offline)
+    private Instant signedAt; 
 
     @Column(nullable = false)
-    private Instant settledAt; // When the backend actually processed it
+    private Instant settledAt; 
 
     @Column(nullable = false)
-    private String bridgeNodeId; // Which mesh node finally delivered it
+    private String bridgeNodeId; 
 
     @Column(nullable = false)
-    private int hopCount; // How many devices it passed through
+    private int hopCount; 
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

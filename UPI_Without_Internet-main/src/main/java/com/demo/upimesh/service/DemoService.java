@@ -17,11 +17,7 @@ import java.security.MessageDigest;
 import java.time.Instant;
 import java.util.UUID;
 
-/**
- * Helper service that:
- *   - seeds demo accounts on startup
- *   - simulates "sender phone creates an encrypted packet" flow
- */
+
 @Service
 public class DemoService {
 
@@ -42,16 +38,7 @@ public class DemoService {
         }
     }
 
-    /**
-     * Simulates the sender's phone:
-     *   1. Build a PaymentInstruction with a fresh nonce + signedAt timestamp.
-     *   2. Encrypt with the server's public key (hybrid RSA+AES).
-     *   3. Wrap in a MeshPacket with TTL.
-     *
-     * In a real Android app, this exact code (minus the server-side reference)
-     * would run on the phone. The phone would have already cached the server's
-     * public key during a previous online session.
-     */
+    
     public MeshPacket createPacket(String senderVpa, String receiverVpa,
                                    BigDecimal amount, String pin, int ttl) throws Exception {
         PaymentInstruction instruction = new PaymentInstruction(
@@ -59,8 +46,8 @@ public class DemoService {
                 receiverVpa,
                 amount,
                 sha256Hex(pin),
-                UUID.randomUUID().toString(),       // nonce — guarantees uniqueness
-                Instant.now().toEpochMilli()        // signedAt — for freshness check
+                UUID.randomUUID().toString(),       
+                Instant.now().toEpochMilli()        
         );
 
         String ciphertext = crypto.encrypt(instruction, serverKey.getPublicKey());

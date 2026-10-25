@@ -14,16 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.Instant;
 
-/**
- * Where the actual ledger update happens. Wrapped in a DB transaction so either
- * BOTH the debit and credit happen, or neither does.
- *
- * The @Version column on Account gives us optimistic locking — if two threads
- * somehow get past idempotency and both try to debit the same account, the
- * second one will fail with OptimisticLockException rather than corrupting
- * the balance. (In a demo the idempotency layer should always catch this first,
- * but defense in depth.)
- */
+
 @Service
 public class SettlementService {
 

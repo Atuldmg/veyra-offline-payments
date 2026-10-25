@@ -6,12 +6,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-/**
- * A simulated phone in the mesh. Holds packets it has seen.
- *
- * In the real system, this state would be on a physical Android device,
- * with packets exchanged via BLE GATT characteristics.
- */
+
 public class VirtualDevice {
 
     private final String deviceId;

@@ -1,11 +1,7 @@
--- VEYRA — MySQL Database Schema & Seed Data
--- Brand: VEYRA (Secure Transactions. Resilient Networks.)
--- Target: MySQL 8.0 / MariaDB 10.4+
 
 CREATE DATABASE IF NOT EXISTS `veyra_db` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE `veyra_db`;
 
--- 1. Users Table
 CREATE TABLE IF NOT EXISTS `users` (
     `id` INT AUTO_INCREMENT PRIMARY KEY,
     `username` VARCHAR(50) NOT NULL UNIQUE,
@@ -15,7 +11,6 @@ CREATE TABLE IF NOT EXISTS `users` (
     `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
 
--- 2. Accounts / Wallets Table
 CREATE TABLE IF NOT EXISTS `accounts` (
     `id` INT AUTO_INCREMENT PRIMARY KEY,
     `user_id` INT NOT NULL,
@@ -29,7 +24,6 @@ CREATE TABLE IF NOT EXISTS `accounts` (
     FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
--- 3. Transactions Table (Canonical Ledger)
 CREATE TABLE IF NOT EXISTS `transactions` (
     `id` BIGINT AUTO_INCREMENT PRIMARY KEY,
     `transaction_reference` VARCHAR(64) NOT NULL UNIQUE,
@@ -54,7 +48,6 @@ CREATE TABLE IF NOT EXISTS `transactions` (
     FOREIGN KEY (`receiver_account_id`) REFERENCES `accounts`(`id`)
 ) ENGINE=InnoDB;
 
--- 4. Transaction Status History (Append-Only Audit)
 CREATE TABLE IF NOT EXISTS `transaction_status_history` (
     `id` BIGINT AUTO_INCREMENT PRIMARY KEY,
     `transaction_id` BIGINT NOT NULL,
@@ -66,7 +59,6 @@ CREATE TABLE IF NOT EXISTS `transaction_status_history` (
     FOREIGN KEY (`transaction_id`) REFERENCES `transactions`(`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
--- 5. Idempotency Records (Pre-decryption Gatekeeper)
 CREATE TABLE IF NOT EXISTS `idempotency_records` (
     `id` BIGINT AUTO_INCREMENT PRIMARY KEY,
     `packet_hash` VARCHAR(64) NOT NULL UNIQUE,
@@ -77,7 +69,6 @@ CREATE TABLE IF NOT EXISTS `idempotency_records` (
     INDEX `idx_idempotency_hash` (`packet_hash`)
 ) ENGINE=InnoDB;
 
--- 6. Offline Message Queue (Store-and-Forward Outbox Vault)
 CREATE TABLE IF NOT EXISTS `offline_queue` (
     `id` BIGINT AUTO_INCREMENT PRIMARY KEY,
     `packet_id` VARCHAR(64) NOT NULL UNIQUE,
@@ -93,7 +84,6 @@ CREATE TABLE IF NOT EXISTS `offline_queue` (
     INDEX `idx_queue_status` (`status`)
 ) ENGINE=InnoDB;
 
--- 7. Virtual Mesh Peer Nodes Registry
 CREATE TABLE IF NOT EXISTS `mesh_nodes` (
     `id` INT AUTO_INCREMENT PRIMARY KEY,
     `node_id` VARCHAR(50) NOT NULL UNIQUE,
@@ -105,7 +95,6 @@ CREATE TABLE IF NOT EXISTS `mesh_nodes` (
     `last_seen` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
 
--- 8. Tamper-Evident System Audit Events
 CREATE TABLE IF NOT EXISTS `audit_events` (
     `id` BIGINT AUTO_INCREMENT PRIMARY KEY,
     `event_type` VARCHAR(50) NOT NULL,
@@ -116,7 +105,6 @@ CREATE TABLE IF NOT EXISTS `audit_events` (
     INDEX `idx_audit_type` (`event_type`)
 ) ENGINE=InnoDB;
 
--- SEED DATA (Synthetic Demo Wallets & Virtual Nodes)
 INSERT INTO `users` (`id`, `username`, `full_name`, `email`, `pin_hash`) VALUES
 (1, 'alice', 'Alice Sharma', 'alice@veyra.local', '$2y$10$eA8m9Z1eA7u0Gf7p1Q0V..dM0pXoW5A8s1Z0m9Z1eA7u0Gf7p1Q0V'),
 (2, 'bob', 'Bob Patel', 'bob@veyra.local', '$2y$10$eA8m9Z1eA7u0Gf7p1Q0V..dM0pXoW5A8s1Z0m9Z1eA7u0Gf7p1Q0V'),

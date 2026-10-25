@@ -1,11 +1,6 @@
 <?php
 declare(strict_types=1);
 
-/**
- * VEYRA Offline Payments — Comprehensive End-to-End Test Suite
- * Tests PHP 8.2 backend, MySQL database, and Java Spring Boot service integration.
- */
-
 $baseUrl = 'http://127.0.0.1:8000';
 $passed = 0;
 $failed = 0;
@@ -59,7 +54,6 @@ echo "\n======================================================\n";
 echo "      VEYRA E2E INTEGRATION & ARCHITECTURE TESTS     \n";
 echo "======================================================\n\n";
 
-// Test 1: Health check
 runTest("1. Health API returns HEALTHY and UP for PHP, MySQL, and Java", function() use ($baseUrl) {
     $res = httpGet("{$baseUrl}/api/health.php");
     if ($res['code'] !== 200) return "HTTP {$res['code']}";
@@ -71,7 +65,6 @@ runTest("1. Health API returns HEALTHY and UP for PHP, MySQL, and Java", functio
     return true;
 });
 
-// Test 2: Accounts endpoint
 runTest("2. Accounts API returns seeded demo wallets with real balances", function() use ($baseUrl) {
     $res = httpGet("{$baseUrl}/api/accounts.php");
     if ($res['code'] !== 200) return "HTTP {$res['code']}";
@@ -82,7 +75,6 @@ runTest("2. Accounts API returns seeded demo wallets with real balances", functi
     return true;
 });
 
-// Test 3: Validation Error on Negative Amount
 runTest("3. Validation rejects negative amount with HTTP 422", function() use ($baseUrl) {
     $res = httpPost("{$baseUrl}/api/transactions.php", [
         'senderVpa'   => 'alice@demo',
@@ -93,7 +85,6 @@ runTest("3. Validation rejects negative amount with HTTP 422", function() use ($
     return true;
 });
 
-// Test 4: Validation Error on Unknown Sender
 runTest("4. Validation rejects non-existent sender VPA", function() use ($baseUrl) {
     $res = httpPost("{$baseUrl}/api/transactions.php", [
         'senderVpa'   => 'attacker@fraud',
@@ -104,7 +95,6 @@ runTest("4. Validation rejects non-existent sender VPA", function() use ($baseUr
     return true;
 });
 
-// Test 5: Validation Error on Same Sender and Receiver
 runTest("5. Validation rejects self-transfer", function() use ($baseUrl) {
     $res = httpPost("{$baseUrl}/api/transactions.php", [
         'senderVpa'   => 'alice@demo',
@@ -115,7 +105,6 @@ runTest("5. Validation rejects self-transfer", function() use ($baseUrl) {
     return true;
 });
 
-// Test 6: Create Valid Offline Transaction
 $createdTxRef = null;
 $createdPacketId = null;
 runTest("6. Create valid offline payment via PHP & Java bridge", function() use ($baseUrl, &$createdTxRef, &$createdPacketId) {
@@ -133,7 +122,6 @@ runTest("6. Create valid offline payment via PHP & Java bridge", function() use 
     return true;
 });
 
-// Test 7: Verify Queue Contains the New Packet
 runTest("7. Offline Outbox Queue holds encrypted packet", function() use ($baseUrl, &$createdPacketId) {
     $res = httpGet("{$baseUrl}/api/queue.php");
     if ($res['code'] !== 200) return "HTTP {$res['code']}";
@@ -143,7 +131,6 @@ runTest("7. Offline Outbox Queue holds encrypted packet", function() use ($baseU
     return true;
 });
 
-// Test 8: Mesh State Retrieval
 runTest("8. Mesh API retrieves peer devices and bridge status", function() use ($baseUrl) {
     $res = httpGet("{$baseUrl}/api/mesh.php");
     if ($res['code'] !== 200) return "HTTP {$res['code']}";
@@ -152,7 +139,6 @@ runTest("8. Mesh API retrieves peer devices and bridge status", function() use (
     return true;
 });
 
-// Test 9: Mesh Gossip Execution
 runTest("9. Mesh gossip propagates packet toward bridge nodes", function() use ($baseUrl) {
     $res = httpPost("{$baseUrl}/api/mesh.php", ['action' => 'gossip']);
     if ($res['code'] !== 200) return "HTTP {$res['code']}";
@@ -160,7 +146,6 @@ runTest("9. Mesh gossip propagates packet toward bridge nodes", function() use (
     return true;
 });
 
-// Test 10: Bridge Synchronization & Ledger Settlement
 runTest("10. Bridge upload flushes packets and settles ledger", function() use ($baseUrl) {
     $res = httpPost("{$baseUrl}/api/synchronize.php", []);
     if ($res['code'] !== 200) return "HTTP {$res['code']}";
@@ -168,7 +153,6 @@ runTest("10. Bridge upload flushes packets and settles ledger", function() use (
     return true;
 });
 
-// Test 11: Transaction status updated to SYNCHRONIZED
 runTest("11. Transaction record is updated to SYNCHRONIZED in MySQL", function() use ($baseUrl, &$createdTxRef) {
     $res = httpGet("{$baseUrl}/api/transactions.php");
     if ($res['code'] !== 200) return "HTTP {$res['code']}";
@@ -184,7 +168,6 @@ runTest("11. Transaction record is updated to SYNCHRONIZED in MySQL", function()
     return "Transaction {$createdTxRef} not found";
 });
 
-// Test 12: System Endpoint and Audit Logs
 runTest("12. System API returns RSA public key and audit events", function() use ($baseUrl) {
     $res = httpGet("{$baseUrl}/api/system.php");
     if ($res['code'] !== 200) return "HTTP {$res['code']}";

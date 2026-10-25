@@ -1,11 +1,8 @@
-/**
- * VEYRA — Theme Engine (Light, Dark, System)
- * Manages theme selection, persistence, and dynamic OS color scheme detection.
- */
+
 
 const VeyraTheme = {
   STORAGE_KEY: 'veyra_theme',
-  currentTheme: 'system', // 'light' | 'dark' | 'system'
+  currentTheme: 'system', 
 
   init() {
     this.currentTheme = localStorage.getItem(this.STORAGE_KEY) || 'system';
@@ -24,10 +21,10 @@ const VeyraTheme = {
       effectiveTheme = isDark ? 'dark' : 'light';
     }
 
-    // Set Bootstrap 5.3 data-bs-theme attribute
+    
     document.documentElement.setAttribute('data-bs-theme', effectiveTheme);
 
-    // Update Dropdown UI
+    
     this.updateDropdownUI(theme, effectiveTheme);
   },
 
@@ -59,7 +56,7 @@ const VeyraTheme = {
       themeText.textContent = label;
     }
 
-    // Update active class on dropdown items
+    
     document.querySelectorAll('[data-theme-value]').forEach(el => {
       const val = el.getAttribute('data-theme-value');
       if (val === selectedTheme) {
@@ -86,7 +83,7 @@ const VeyraTheme = {
     if (!window.matchMedia) return;
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
     
-    // Modern event listener for OS appearance toggle
+    
     const handler = (e) => {
       if (this.currentTheme === 'system') {
         const effectiveTheme = e.matches ? 'dark' : 'light';
@@ -103,7 +100,7 @@ const VeyraTheme = {
   }
 };
 
-// Initialize immediately to prevent theme flash
+
 document.addEventListener('DOMContentLoaded', () => {
   VeyraTheme.init();
 });
