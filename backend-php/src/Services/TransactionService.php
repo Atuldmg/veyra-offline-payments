@@ -195,4 +195,21 @@ class TransactionService
             'results'          => $results
         ];
     }
+
+    public function settleTransaction(int $txId): array
+    {
+        $this->synchronizeBridges();
+        $tx = $this->txRepo->findById($txId);
+        if (!$tx) {
+            throw new Exception("Transaction #{$txId} not found.");
+        }
+        if ($tx['status'] === 'QUEUED_FOR_SYNC') {
+            $this->txRepo->updateStatus($txId, 'SYNCHRONIZED', null, 'phone-bridge', 1);
+            $this->txRepo->logStatusTransition($txId, 'QUEUED_FOR_SYNC', 'SYNCHRONIZED', 'ADMIN_MANUAL_SETTLE', 'Manually settled and reconciled against bank accounts');
+            if (!empty($tx['packet_id'])) {
+                $this->queueRepo->markIngested($tx['packet_id']);
+            }
+        }
+        return ['status' => 'SUCCESS', 'transaction' => $this->txRepo->findById($txId)];
+    }
 }
