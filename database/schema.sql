@@ -106,26 +106,30 @@ CREATE TABLE IF NOT EXISTS `audit_events` (
 ) ENGINE=InnoDB;
 
 INSERT INTO `users` (`id`, `username`, `full_name`, `email`, `pin_hash`) VALUES
-(1, 'alice', 'Alice Sharma', 'alice@veyra.local', '$2y$10$eA8m9Z1eA7u0Gf7p1Q0V..dM0pXoW5A8s1Z0m9Z1eA7u0Gf7p1Q0V'),
-(2, 'bob', 'Bob Patel', 'bob@veyra.local', '$2y$10$eA8m9Z1eA7u0Gf7p1Q0V..dM0pXoW5A8s1Z0m9Z1eA7u0Gf7p1Q0V'),
-(3, 'carol', 'Carol Verma', 'carol@veyra.local', '$2y$10$eA8m9Z1eA7u0Gf7p1Q0V..dM0pXoW5A8s1Z0m9Z1eA7u0Gf7p1Q0V'),
-(4, 'dave', 'Dave Rao', 'dave@veyra.local', '$2y$10$eA8m9Z1eA7u0Gf7p1Q0V..dM0pXoW5A8s1Z0m9Z1eA7u0Gf7p1Q0V')
-ON DUPLICATE KEY UPDATE `full_name`=VALUES(`full_name`);
+(1, 'atul', 'Atul Anand', 'atul@veyra.local', '$2y$10$eA8m9Z1eA7u0Gf7p1Q0V..dM0pXoW5A8s1Z0m9Z1eA7u0Gf7p1Q0V'),
+(2, 'bikram', 'Bikram', 'bikram@veyra.local', '$2y$10$eA8m9Z1eA7u0Gf7p1Q0V..dM0pXoW5A8s1Z0m9Z1eA7u0Gf7p1Q0V'),
+(3, 'samiksha', 'Samiksha', 'samiksha@veyra.local', '$2y$10$eA8m9Z1eA7u0Gf7p1Q0V..dM0pXoW5A8s1Z0m9Z1eA7u0Gf7p1Q0V'),
+(4, 'bhavya', 'Bhavya', 'bhavya@veyra.local', '$2y$10$eA8m9Z1eA7u0Gf7p1Q0V..dM0pXoW5A8s1Z0m9Z1eA7u0Gf7p1Q0V'),
+(5, 'roy', 'Roy', 'roy@veyra.local', '$2y$10$eA8m9Z1eA7u0Gf7p1Q0V..dM0pXoW5A8s1Z0m9Z1eA7u0Gf7p1Q0V'),
+(6, 'anand', 'Anand', 'anand@veyra.local', '$2y$10$eA8m9Z1eA7u0Gf7p1Q0V..dM0pXoW5A8s1Z0m9Z1eA7u0Gf7p1Q0V')
+ON DUPLICATE KEY UPDATE `username`=VALUES(`username`), `full_name`=VALUES(`full_name`), `email`=VALUES(`email`);
 
 INSERT INTO `accounts` (`id`, `user_id`, `vpa`, `account_number`, `balance`, `currency`, `status`, `version`) VALUES
-(1, 1, 'alice@demo', 'VEYRA-ACC-1001', 5000.00, 'INR', 'ACTIVE', 0),
-(2, 2, 'bob@demo', 'VEYRA-ACC-1002', 1000.00, 'INR', 'ACTIVE', 0),
-(3, 3, 'carol@demo', 'VEYRA-ACC-1003', 2500.00, 'INR', 'ACTIVE', 0),
-(4, 4, 'dave@demo', 'VEYRA-ACC-1004', 500.00, 'INR', 'ACTIVE', 0)
-ON DUPLICATE KEY UPDATE `balance`=VALUES(`balance`);
+(1, 1, 'atul@demo', 'VEYRA-ACC-1001', 5000.00, 'INR', 'ACTIVE', 0),
+(2, 2, 'bikram@demo', 'VEYRA-ACC-1002', 2000.00, 'INR', 'ACTIVE', 0),
+(3, 3, 'samiksha@demo', 'VEYRA-ACC-1003', 3000.00, 'INR', 'ACTIVE', 0),
+(4, 4, 'bhavya@demo', 'VEYRA-ACC-1004', 1500.00, 'INR', 'ACTIVE', 0),
+(5, 5, 'roy@demo', 'VEYRA-ACC-1005', 4000.00, 'INR', 'ACTIVE', 0),
+(6, 6, 'anand@demo', 'VEYRA-ACC-1006', 2500.00, 'INR', 'ACTIVE', 0)
+ON DUPLICATE KEY UPDATE `vpa`=VALUES(`vpa`), `balance`=VALUES(`balance`);
 
 INSERT INTO `mesh_nodes` (`id`, `node_id`, `label`, `has_internet`, `is_bridge`, `battery_level`, `status`) VALUES
-(1, 'phone-alice', 'Alice (Origin Sender)', FALSE, FALSE, 94, 'ONLINE'),
+(1, 'phone-atul', 'Atul Anand (Origin Sender)', FALSE, FALSE, 94, 'ONLINE'),
 (2, 'phone-stranger1', 'Stranger 1 (Relay)', FALSE, FALSE, 82, 'ONLINE'),
 (3, 'phone-stranger2', 'Stranger 2 (Relay)', FALSE, FALSE, 76, 'ONLINE'),
 (4, 'phone-stranger3', 'Stranger 3 (Relay)', FALSE, FALSE, 68, 'ONLINE'),
 (5, 'phone-bridge', 'Bridge Node (4G Uplink Gateway)', TRUE, TRUE, 98, 'ONLINE')
-ON DUPLICATE KEY UPDATE `status`=VALUES(`status`);
+ON DUPLICATE KEY UPDATE `node_id`=VALUES(`node_id`), `label`=VALUES(`label`), `status`=VALUES(`status`);
 
 INSERT INTO `audit_events` (`event_type`, `actor`, `ip_address`, `details`) VALUES
 ('SYSTEM_INITIALIZATION', 'GATEWAY_ORCHESTRATOR', '127.0.0.1', JSON_OBJECT('status', 'SUCCESS', 'version', '1.0.0-PROTOTYPE', 'environment', 'production_local'));
