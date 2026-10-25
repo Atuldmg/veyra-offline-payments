@@ -38,7 +38,7 @@ public class ApiController {
                 req.senderVpa, req.receiverVpa, req.amount, req.pin,
                 req.ttl == null ? 5 : req.ttl);
 
-        String startDevice = req.startDevice == null ? "phone-alice" : req.startDevice;
+        String startDevice = req.startDevice != null ? req.startDevice : (mesh.getDevice("phone-atul") != null ? "phone-atul" : "phone-alice");
         mesh.inject(startDevice, packet);
 
         return ResponseEntity.ok(Map.of(

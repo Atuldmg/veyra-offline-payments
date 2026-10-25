@@ -69,16 +69,16 @@ runTest("2. Accounts API returns seeded demo wallets with real balances", functi
     $res = httpGet("{$baseUrl}/api/accounts.php");
     if ($res['code'] !== 200) return "HTTP {$res['code']}";
     $accs = $res['data'];
-    if (!is_array($accs) || count($accs) < 4) return "Expected at least 4 accounts";
+    if (!is_array($accs) || count($accs) < 6) return "Expected at least 6 accounts";
     $vpas = array_column($accs, 'vpa');
-    if (!in_array('alice@demo', $vpas) || !in_array('bob@demo', $vpas)) return "Missing demo accounts";
+    if (!in_array('atul@demo', $vpas) || !in_array('bikram@demo', $vpas) || !in_array('roy@demo', $vpas) || !in_array('anand@demo', $vpas)) return "Missing demo accounts";
     return true;
 });
 
 runTest("3. Validation rejects negative amount with HTTP 422", function() use ($baseUrl) {
     $res = httpPost("{$baseUrl}/api/transactions.php", [
-        'senderVpa'   => 'alice@demo',
-        'receiverVpa' => 'bob@demo',
+        'senderVpa'   => 'atul@demo',
+        'receiverVpa' => 'bikram@demo',
         'amount'      => -50.00
     ]);
     if ($res['code'] !== 422) return "Expected HTTP 422, got {$res['code']}";
@@ -88,7 +88,7 @@ runTest("3. Validation rejects negative amount with HTTP 422", function() use ($
 runTest("4. Validation rejects non-existent sender VPA", function() use ($baseUrl) {
     $res = httpPost("{$baseUrl}/api/transactions.php", [
         'senderVpa'   => 'attacker@fraud',
-        'receiverVpa' => 'bob@demo',
+        'receiverVpa' => 'bikram@demo',
         'amount'      => 100.00
     ]);
     if ($res['code'] !== 422) return "Expected HTTP 422, got {$res['code']}";
@@ -97,8 +97,8 @@ runTest("4. Validation rejects non-existent sender VPA", function() use ($baseUr
 
 runTest("5. Validation rejects self-transfer", function() use ($baseUrl) {
     $res = httpPost("{$baseUrl}/api/transactions.php", [
-        'senderVpa'   => 'alice@demo',
-        'receiverVpa' => 'alice@demo',
+        'senderVpa'   => 'atul@demo',
+        'receiverVpa' => 'atul@demo',
         'amount'      => 100.00
     ]);
     if ($res['code'] !== 422) return "Expected HTTP 422, got {$res['code']}";
@@ -109,8 +109,8 @@ $createdTxRef = null;
 $createdPacketId = null;
 runTest("6. Create valid offline payment via PHP & Java bridge", function() use ($baseUrl, &$createdTxRef, &$createdPacketId) {
     $res = httpPost("{$baseUrl}/api/transactions.php", [
-        'senderVpa'   => 'carol@demo',
-        'receiverVpa' => 'dave@demo',
+        'senderVpa'   => 'samiksha@demo',
+        'receiverVpa' => 'bhavya@demo',
         'amount'      => 75.00,
         'note'        => 'Automated test payment'
     ]);

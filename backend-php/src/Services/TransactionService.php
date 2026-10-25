@@ -79,6 +79,8 @@ class TransactionService
 
         $this->txRepo->logStatusTransition($txId, null, 'QUEUED_FOR_SYNC', 'OFFLINE_TERMINAL', 'Encrypted and placed in mesh buffer');
 
+        $holderNode = 'phone-' . explode('@', $senderVpa)[0];
+
         $this->queueRepo->enqueue([
             'packet_id'           => $packetId,
             'packet_hash'         => $packetHash,
@@ -87,7 +89,7 @@ class TransactionService
             'amount'              => $amount,
             'ciphertext'          => $sendRes['ciphertextPreview'] ?? 'AES-256-GCM encrypted envelope',
             'ttl'                 => $ttl,
-            'current_holder_node' => 'phone-alice'
+            'current_holder_node' => $holderNode
         ]);
 
         $this->auditRepo->log('TRANSACTION_CREATED', 'API_CLIENT', [
@@ -108,7 +110,7 @@ class TransactionService
             'amount'               => $amount,
             'senderVpa'            => $senderVpa,
             'receiverVpa'          => $receiverVpa,
-            'holder'               => 'phone-alice',
+            'holder'               => $holderNode,
             'ttl'                  => $ttl
         ];
     }
