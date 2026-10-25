@@ -496,7 +496,7 @@ const VeyraApp = {
     this.showToast('Settling Transaction', 'Routing packet through BLE mesh and settling with bank bridge...', 'info');
     try {
       await VeyraAPI.runGossip();
-      await VeyraAPI.synchronizeBridges();
+      await VeyraAPI.synchronizeBridges(txId);
       await this.refreshAll();
       this.showToast('Transaction Settled', 'Packet successfully routed and settled against bank ledger.', 'success');
     } catch (err) {
