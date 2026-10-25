@@ -86,18 +86,30 @@ const VeyraApp = {
       form.addEventListener('submit', (e) => this.handlePaymentSubmit(e));
     }
 
-    
     const modalForm = document.getElementById('modalPaymentForm');
     if (modalForm) {
       modalForm.addEventListener('submit', (e) => this.handlePaymentSubmit(e, 'newTransactionModal'));
     }
 
-    
     const ttlRange = document.getElementById('txTtl');
     const ttlDisplay = document.getElementById('txTtlDisplay');
     if (ttlRange && ttlDisplay) {
       ttlRange.addEventListener('input', () => {
         ttlDisplay.textContent = `${ttlRange.value} hops`;
+      });
+    }
+
+    const autoSwitch = document.getElementById('autoCompleteTransfer');
+    const submitBtn = document.getElementById('btnSubmitPayment');
+    if (autoSwitch && submitBtn) {
+      autoSwitch.addEventListener('change', () => {
+        if (autoSwitch.checked) {
+          submitBtn.innerHTML = '<i class="bi bi-send-check-fill me-1"></i> Send & Complete Transfer';
+          submitBtn.className = 'btn btn-sm btn-primary';
+        } else {
+          submitBtn.innerHTML = '<i class="bi bi-inbox-fill me-1"></i> Queue in Offline Mesh Only';
+          submitBtn.className = 'btn btn-sm btn-outline-primary';
+        }
       });
     }
   },
@@ -275,6 +287,12 @@ const VeyraApp = {
           const tr = document.createElement('tr');
           const statusBadge = this.getStatusBadge(tx.status);
           const dateStr = tx.created_at ? new Date(tx.created_at).toLocaleString() : 'Recent';
+          const isPending = tx.status === 'QUEUED_FOR_SYNC' || tx.status === 'QUEUED' || tx.status === 'PENDING_VERIFICATION';
+          const settleBtn = isPending ? `
+            <button class="btn btn-sm btn-success py-0 px-2 rounded-2 ms-1" title="Complete & Settle" onclick="VeyraApp.completeTransaction(${tx.id})">
+              <i class="bi bi-check2-circle me-1"></i>Settle
+            </button>
+          ` : '';
 
           tr.innerHTML = `
             <td>
@@ -287,18 +305,25 @@ const VeyraApp = {
               <button class="btn btn-sm btn-outline-primary py-0 px-2 rounded-2" onclick="VeyraApp.showTxDetails(${tx.id})">
                 View
               </button>
+              ${settleBtn}
             </td>
           `;
           tbody.appendChild(tr);
         });
       }
 
-      
       const fullTbody = document.getElementById('fullTransactionsBody');
       if (fullTbody) {
         fullTbody.innerHTML = '';
         txs.forEach(tx => {
           const tr = document.createElement('tr');
+          const isPending = tx.status === 'QUEUED_FOR_SYNC' || tx.status === 'QUEUED' || tx.status === 'PENDING_VERIFICATION';
+          const settleBtn = isPending ? `
+            <button class="btn btn-sm btn-success py-0 px-2 ms-1" title="Complete & Settle" onclick="VeyraApp.completeTransaction(${tx.id})">
+              <i class="bi bi-check2-circle me-1"></i>Settle
+            </button>
+          ` : '';
+
           tr.innerHTML = `
             <td><code>${tx.transaction_reference}</code></td>
             <td>${this.escapeHtml(tx.sender_vpa)}</td>
@@ -307,7 +332,10 @@ const VeyraApp = {
             <td>${this.getStatusBadge(tx.status)}</td>
             <td><span class="badge bg-secondary">${tx.hop_count} hops</span></td>
             <td><small class="text-muted">${tx.settled_at || tx.created_at}</small></td>
-            <td><button class="btn btn-sm btn-outline-primary py-0 px-2" onclick="VeyraApp.showTxDetails(${tx.id})">Inspect</button></td>
+            <td>
+              <button class="btn btn-sm btn-outline-primary py-0 px-2" onclick="VeyraApp.showTxDetails(${tx.id})">Inspect</button>
+              ${settleBtn}
+            </td>
           `;
           fullTbody.appendChild(tr);
         });
@@ -329,7 +357,7 @@ const VeyraApp = {
       const tbody = document.getElementById('queueTableBody');
       if (tbody) {
         if (queue.length === 0) {
-          tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-4"><i class="bi bi-inbox me-2"></i>Outbox vault is empty. No offline packets waiting for bridge uplink.</td></tr>';
+          tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted py-4"><i class="bi bi-inbox me-2"></i>Outbox vault is empty. No offline packets waiting for bridge uplink.</td></tr>';
           return;
         }
 
@@ -350,6 +378,11 @@ const VeyraApp = {
             <td><span class="badge bg-secondary-subtle text-secondary border font-monospace">${this.escapeHtml(pkt.current_holder_node || 'phone-atul')}</span></td>
             <td><span class="badge bg-info-subtle text-info border">${pkt.ttl} hops</span></td>
             <td><span class="badge-soft-warning">${this.escapeHtml(pkt.status || 'QUEUED')}</span></td>
+            <td>
+              <button class="btn btn-sm btn-success py-0 px-2" onclick="VeyraApp.completeTransaction()">
+                <i class="bi bi-check2-circle me-1"></i>Settle
+              </button>
+            </td>
           `;
           tbody.appendChild(tr);
         });
@@ -414,6 +447,7 @@ const VeyraApp = {
     const amount = parseFloat((form.querySelector('[name="amount"]') || form.querySelector('#txAmount') || form.querySelector('#modalTxAmount')).value);
     const pin = (form.querySelector('[name="pin"]') || form.querySelector('#txPin') || form.querySelector('#modalTxPin'))?.value || '1234';
     const ttl = parseInt((form.querySelector('[name="ttl"]') || form.querySelector('#txTtl') || form.querySelector('#modalTxTtl'))?.value || '5', 10);
+    const autoComplete = form.querySelector('#autoCompleteTransfer')?.checked ?? true;
 
     if (!senderVpa || !receiverVpa || !amount || amount <= 0) {
       this.showToast('Validation Error', 'Please choose sender, recipient, and a positive amount.', 'warning');
@@ -431,21 +465,42 @@ const VeyraApp = {
 
     try {
       const res = await VeyraAPI.createTransaction({ senderVpa, receiverVpa, amount, pin, ttl });
-      this.showToast('Envelope Created & Injected', `Transaction Reference: ${res.data.transactionReference}`, 'success');
 
-      
+      if (autoComplete) {
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Relaying & Settling...';
+        await VeyraAPI.runGossip();
+        await VeyraAPI.synchronizeBridges();
+        this.showToast('Transfer Completed & Settled', `₹${amount.toFixed(2)} sent from ${senderVpa} to ${receiverVpa} and settled against bank ledger.`, 'success');
+      } else {
+        this.showToast('Envelope Queued Offline', `Transaction Reference: ${res.data.transactionReference}`, 'success');
+      }
+
       if (modalId) {
         const modalEl = document.getElementById(modalId);
-        bootstrap.Modal.getInstance(modalEl)?.hide();
+        if (modalEl) {
+          bootstrap.Modal.getOrCreateInstance(modalEl).hide();
+        }
       }
 
       form.reset();
       await this.refreshAll();
     } catch (err) {
-      this.showToast('Payment Creation Failed', err.message, 'danger');
+      this.showToast('Payment Failed', err.message, 'danger');
     } finally {
       btn.disabled = false;
       btn.innerHTML = origText;
+    }
+  },
+
+  async completeTransaction(txId = null) {
+    this.showToast('Settling Transaction', 'Routing packet through BLE mesh and settling with bank bridge...', 'info');
+    try {
+      await VeyraAPI.runGossip();
+      await VeyraAPI.synchronizeBridges();
+      await this.refreshAll();
+      this.showToast('Transaction Settled', 'Packet successfully routed and settled against bank ledger.', 'success');
+    } catch (err) {
+      this.showToast('Settlement Failed', err.message, 'danger');
     }
   },
 
