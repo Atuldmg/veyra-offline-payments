@@ -425,9 +425,14 @@
             <h3 class="fw-bold text-body mb-1">Store-and-Forward Outbox Vault</h3>
             <p class="text-muted small mb-0">Encrypted payment envelopes buffered locally awaiting bridge connectivity.</p>
           </div>
-          <button class="btn btn-sm btn-primary" onclick="VeyraApp.triggerBridgeSync()">
-            <i class="bi bi-cloud-arrow-up-fill me-1"></i> Flush Queue to Bridge
-          </button>
+          <div class="d-flex align-items-center gap-2">
+            <button class="btn btn-sm btn-outline-primary" onclick="VeyraApp.loadQueue()">
+              <i class="bi bi-arrow-repeat me-1"></i> Refresh Queue
+            </button>
+            <button class="btn btn-sm btn-primary" onclick="VeyraApp.triggerBridgeSync()">
+              <i class="bi bi-cloud-arrow-up-fill me-1"></i> Flush Queue to Bridge
+            </button>
+          </div>
         </div>
 
         <div class="card-veyra">

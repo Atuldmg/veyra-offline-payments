@@ -151,7 +151,8 @@ const VeyraApp = {
       this.loadHealth(),
       this.loadAccounts(),
       this.loadTransactions(),
-      this.loadMesh()
+      this.loadMesh(),
+      this.loadQueue()
     ]).catch(err => console.warn('Refresh error:', err));
   },
 
@@ -160,6 +161,7 @@ const VeyraApp = {
       await this.loadHealth();
       await this.loadMesh(true);
       await this.loadTransactions(true);
+      await this.loadQueue(true);
     } catch (e) {
       
     }
@@ -312,6 +314,48 @@ const VeyraApp = {
       }
     } catch (e) {
       console.warn('Failed to load transactions:', e);
+    }
+  },
+
+  async loadQueue(isPolling = false) {
+    try {
+      const res = await VeyraAPI.getQueue();
+      const queue = res.queue || [];
+      this.cachedQueue = queue;
+
+      const elQueued = document.getElementById('metricQueued');
+      if (elQueued) elQueued.textContent = queue.length;
+
+      const tbody = document.getElementById('queueTableBody');
+      if (tbody) {
+        if (queue.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-4"><i class="bi bi-inbox me-2"></i>Outbox vault is empty. No offline packets waiting for bridge uplink.</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = '';
+        queue.forEach(pkt => {
+          const tr = document.createElement('tr');
+          const pktIdShort = pkt.packet_id ? (pkt.packet_id.substring(0, 12) + '...') : '--';
+          tr.innerHTML = `
+            <td><code class="font-monospace text-primary">${this.escapeHtml(pktIdShort)}</code></td>
+            <td>
+              <div class="small">
+                <span class="fw-semibold">${this.escapeHtml(pkt.sender_vpa)}</span>
+                <i class="bi bi-arrow-right mx-1 text-muted"></i>
+                <span class="fw-semibold">${this.escapeHtml(pkt.receiver_vpa)}</span>
+              </div>
+            </td>
+            <td><strong class="text-primary">₹${parseFloat(pkt.amount).toLocaleString('en-IN', {minimumFractionDigits: 2})}</strong></td>
+            <td><span class="badge bg-secondary-subtle text-secondary border font-monospace">${this.escapeHtml(pkt.current_holder_node || 'phone-atul')}</span></td>
+            <td><span class="badge bg-info-subtle text-info border">${pkt.ttl} hops</span></td>
+            <td><span class="badge-soft-warning">${this.escapeHtml(pkt.status || 'QUEUED')}</span></td>
+          `;
+          tbody.appendChild(tr);
+        });
+      }
+    } catch (e) {
+      if (!isPolling) console.warn('Failed to load offline queue:', e);
     }
   },
 
