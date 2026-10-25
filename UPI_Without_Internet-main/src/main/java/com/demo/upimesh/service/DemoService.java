@@ -30,11 +30,14 @@ public class DemoService {
     @PostConstruct
     public void seedAccounts() {
         if (accounts.count() == 0) {
-            accounts.save(new Account("alice@demo", "Alice",   new BigDecimal("5000.00")));
-            accounts.save(new Account("bob@demo",   "Bob",     new BigDecimal("1000.00")));
-            accounts.save(new Account("carol@demo", "Carol",   new BigDecimal("2500.00")));
-            accounts.save(new Account("dave@demo",  "Dave",    new BigDecimal("500.00")));
-            log.info("Seeded 4 demo accounts");
+            accounts.save(new Account("atul@demo",     "Atul Anand", new BigDecimal("5000.00")));
+            accounts.save(new Account("bikram@demo",   "Bikram",     new BigDecimal("2000.00")));
+            accounts.save(new Account("samiksha@demo", "Samiksha",   new BigDecimal("3000.00")));
+            accounts.save(new Account("bhavya@demo",   "Bhavya",     new BigDecimal("1500.00")));
+            accounts.save(new Account("roy@demo",      "Roy",        new BigDecimal("4000.00")));
+            accounts.save(new Account("anand@demo",    "Anand",      new BigDecimal("2500.00")));
+            accounts.save(new Account("alice@demo",    "Alice",      new BigDecimal("5000.00")));
+            accounts.save(new Account("bob@demo",      "Bob",        new BigDecimal("1000.00")));
         }
     }
 
