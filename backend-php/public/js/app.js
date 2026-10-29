@@ -299,7 +299,7 @@ const VeyraApp = {
         txs.slice(0, 5).forEach(tx => {
           const tr = document.createElement('tr');
           const statusBadge = this.getStatusBadge(tx.status, tx);
-          const dateStr = tx.created_at ? new Date(tx.created_at).toLocaleString() : 'Recent';
+          const dateStr = tx.created_at ? new Date(tx.created_at.replace(' ', 'T')).toLocaleString() : 'Recent';
           const isPending = tx.status === 'QUEUED_FOR_SYNC' || tx.status === 'QUEUED' || tx.status === 'PENDING_VERIFICATION';
           const settleBtn = isPending ? `
             <button class="btn btn-sm btn-success py-0 px-2 rounded-2 ms-1" title="Complete & Settle" onclick="VeyraApp.completeTransaction(${tx.id})">
@@ -337,8 +337,15 @@ const VeyraApp = {
             </button>
           ` : '';
 
-          const rawTs = tx.settled_at || tx.created_at;
-          const tsDisplay = rawTs ? new Date(rawTs.replace(' ', 'T')).toLocaleString() : '—';
+          // created_at is unique per transaction (set at INSERT time).
+          // settled_at now uses per-row offset (created_at + random delay) so it's also unique.
+          const fmtTs = raw => raw ? new Date(raw.replace(' ', 'T')).toLocaleString() : '—';
+          const createdDisplay  = fmtTs(tx.created_at);
+          const settledDisplay  = fmtTs(tx.settled_at);
+          const tsDisplay = tx.settled_at ? settledDisplay : createdDisplay;
+          const tsTitle   = tx.settled_at
+            ? `Queued: ${createdDisplay}\nSettled: ${settledDisplay}`
+            : `Queued: ${createdDisplay}`;
           tr.innerHTML = `
             <td><code>${tx.transaction_reference}</code></td>
             <td>${this.escapeHtml(tx.sender_vpa)}</td>
@@ -346,7 +353,7 @@ const VeyraApp = {
             <td><strong class="text-primary">₹${parseFloat(tx.amount).toFixed(2)}</strong></td>
             <td>${this.getStatusBadge(tx.status, tx)}</td>
             <td><span class="badge bg-secondary">${tx.hop_count} hops</span></td>
-            <td><small class="text-muted">${tsDisplay}</small></td>
+            <td><small class="text-muted" title="${tsTitle}" style="cursor:help">${tsDisplay}</small></td>
             <td>
               <button class="btn btn-sm btn-outline-primary py-0 px-2" onclick="VeyraApp.showTxDetails(${tx.id})">Inspect</button>
               ${settleBtn}
