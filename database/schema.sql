@@ -133,3 +133,19 @@ ON DUPLICATE KEY UPDATE `node_id`=VALUES(`node_id`), `label`=VALUES(`label`), `s
 
 INSERT INTO `audit_events` (`event_type`, `actor`, `ip_address`, `details`) VALUES
 ('SYSTEM_INITIALIZATION', 'GATEWAY_ORCHESTRATOR', '127.0.0.1', JSON_OBJECT('status', 'SUCCESS', 'version', '1.0.0-PROTOTYPE', 'environment', 'production_local'));
+
+INSERT INTO `transactions`
+    (`transaction_reference`, `sender_account_id`, `receiver_account_id`, `sender_vpa`, `receiver_vpa`, `amount`, `status`, `packet_id`, `packet_hash`, `nonce`, `hop_count`, `bridge_node_id`, `created_at`, `settled_at`)
+VALUES
+    ('TX-VEYRA-20261027-010098CE', 1, 2, 'atul@demo',    'bikram@demo',   1000.00, 'SYNCHRONIZED', 'PKT-DEMO-001', SHA2('PKT-DEMO-001', 256), 'nonce001', 1, 'phone-bridge', '2026-10-27 11:05:12', '2026-10-27 11:07:34'),
+    ('TX-VEYRA-20261026-26B45A08', 5, 6, 'roy@demo',     'anand@demo',    750.00,  'SYNCHRONIZED', 'PKT-DEMO-002', SHA2('PKT-DEMO-002', 256), 'nonce002', 1, 'phone-bridge', '2026-10-26 14:22:47', '2026-10-26 14:25:19'),
+    ('TX-VEYRA-20261025-2E668366', 4, 3, 'bhavya@demo',  'samiksha@demo', 75.00,   'SYNCHRONIZED', 'PKT-DEMO-003', SHA2('PKT-DEMO-003', 256), 'nonce003', 1, 'phone-bridge', '2026-10-25 09:10:05', '2026-10-25 09:12:58'),
+    ('TX-VEYRA-20261025-EA1B8071', 5, 6, 'roy@demo',     'anand@demo',    250.00,  'SYNCHRONIZED', 'PKT-DEMO-004', SHA2('PKT-DEMO-004', 256), 'nonce004', 1, 'phone-bridge', '2026-10-25 08:48:33', '2026-10-25 08:51:02'),
+    ('TX-VEYRA-20261025-D9887F38', 4, 3, 'bhavya@demo',  'samiksha@demo', 75.00,   'SYNCHRONIZED', 'PKT-DEMO-005', SHA2('PKT-DEMO-005', 256), 'nonce005', 1, 'phone-bridge', '2026-10-25 07:30:19', '2026-10-25 07:33:44'),
+    ('TX-VEYRA-20261025-AD584FFE', 3, 4, 'samiksha@demo','bhavya@demo',   75.00,   'SYNCHRONIZED', 'PKT-DEMO-006', SHA2('PKT-DEMO-006', 256), 'nonce006', 1, 'phone-bridge', '2026-10-25 06:55:41', '2026-10-25 06:58:12'),
+    ('TX-VEYRA-20261025-9E69515C', 5, 2, 'roy@demo',     'bikram@demo',   3000.00, 'SYNCHRONIZED', 'PKT-DEMO-007', SHA2('PKT-DEMO-007', 256), 'nonce007', 1, 'phone-bridge', '2026-10-25 06:20:08', '2026-10-25 06:23:37'),
+    ('TX-VEYRA-20261025-4A2EE198', 2, 1, 'bikram@demo',  'atul@demo',     50.00,   'SYNCHRONIZED', 'PKT-DEMO-008', SHA2('PKT-DEMO-008', 256), 'nonce008', 1, 'phone-bridge', '2026-10-25 05:44:29', '2026-10-25 05:47:03'),
+    ('TX-VEYRA-20261025-FD0BB638', 3, 4, 'samiksha@demo','bhavya@demo',   75.00,   'SYNCHRONIZED', 'PKT-DEMO-009', SHA2('PKT-DEMO-009', 256), 'nonce009', 1, 'phone-bridge', '2026-10-25 04:58:55', '2026-10-25 05:01:22'),
+    ('TX-VEYRA-20261025-C55724AB', 1, 2, 'atul@demo',    'bikram@demo',   50.00,   'SYNCHRONIZED', 'PKT-DEMO-010', SHA2('PKT-DEMO-010', 256), 'nonce010', 1, 'phone-bridge', '2026-10-25 04:12:14', '2026-10-25 04:15:41'),
+    ('TX-VEYRA-20261025-69B82301', 3, 4, 'samiksha@demo','bhavya@demo',   75.00,   'SYNCHRONIZED', 'PKT-DEMO-011', SHA2('PKT-DEMO-011', 256), 'nonce011', 1, 'phone-bridge', '2026-10-25 03:29:07', '2026-10-25 03:32:50')
+ON DUPLICATE KEY UPDATE `status`=VALUES(`status`);

@@ -337,6 +337,8 @@ const VeyraApp = {
             </button>
           ` : '';
 
+          const rawTs = tx.settled_at || tx.created_at;
+          const tsDisplay = rawTs ? new Date(rawTs.replace(' ', 'T')).toLocaleString() : '—';
           tr.innerHTML = `
             <td><code>${tx.transaction_reference}</code></td>
             <td>${this.escapeHtml(tx.sender_vpa)}</td>
@@ -344,7 +346,7 @@ const VeyraApp = {
             <td><strong class="text-primary">₹${parseFloat(tx.amount).toFixed(2)}</strong></td>
             <td>${this.getStatusBadge(tx.status, tx)}</td>
             <td><span class="badge bg-secondary">${tx.hop_count} hops</span></td>
-            <td><small class="text-muted">${tx.settled_at || tx.created_at}</small></td>
+            <td><small class="text-muted">${tsDisplay}</small></td>
             <td>
               <button class="btn btn-sm btn-outline-primary py-0 px-2" onclick="VeyraApp.showTxDetails(${tx.id})">Inspect</button>
               ${settleBtn}
