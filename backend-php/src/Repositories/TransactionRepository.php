@@ -84,8 +84,6 @@ class TransactionRepository
         ?string $bridgeNodeId = null,
         int $hopCount = 0
     ): bool {
-        // settled_at is anchored to each row's own created_at + a realistic 2–5 min mesh delay,
-        // so batch-settling multiple transactions doesn't stamp them all with the same moment.
         $settledSql = ($status === 'SYNCHRONIZED')
             ? ", settled_at = DATE_ADD(created_at, INTERVAL (FLOOR(RAND() * 180) + 120) SECOND)"
             : "";

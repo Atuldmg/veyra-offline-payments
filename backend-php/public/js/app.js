@@ -18,26 +18,26 @@ const VeyraApp = {
     this.setupQuickActions();
     this.setupSidebarToggle();
 
-    
+
     await this.refreshAll();
 
-    
+
     this.pollTimer = setInterval(() => this.pollTelemetry(), 8000);
   },
 
   setupNavigation() {
-    
+
     document.querySelectorAll('[data-view-target]').forEach(link => {
       link.addEventListener('click', (e) => {
         e.preventDefault();
         const targetView = link.getAttribute('data-view-target');
         this.switchView(targetView);
 
-        
+
         document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
         link.classList.add('active');
 
-        
+
         document.getElementById('veyraSidebar')?.classList.remove('show');
         document.getElementById('sidebarBackdrop')?.classList.remove('show');
       });
@@ -45,16 +45,16 @@ const VeyraApp = {
   },
 
   switchView(viewName) {
-    
+
     document.querySelectorAll('.view-pane').forEach(el => el.classList.add('d-none'));
 
-    
+
     const targetEl = document.getElementById(`view-${viewName}`);
     if (targetEl) {
       targetEl.classList.remove('d-none');
     }
 
-    
+
     if (viewName === 'transactions') this.loadTransactions();
     if (viewName === 'queue') this.loadQueue();
     if (viewName === 'mesh') this.loadMesh();
@@ -128,26 +128,26 @@ const VeyraApp = {
   },
 
   setupQuickActions() {
-    
+
     document.getElementById('actionNewPayment')?.addEventListener('click', (e) => {
       e.preventDefault();
       const modal = new bootstrap.Modal(document.getElementById('newTransactionModal'));
       modal.show();
     });
 
-    
+
     document.getElementById('actionRunGossip')?.addEventListener('click', async (e) => {
       e.preventDefault();
       await this.triggerGossip();
     });
 
-    
+
     document.getElementById('actionFlushBridges')?.addEventListener('click', async (e) => {
       e.preventDefault();
       await this.triggerBridgeSync();
     });
 
-    
+
     document.getElementById('actionInspectKeys')?.addEventListener('click', (e) => {
       e.preventDefault();
       const modal = new bootstrap.Modal(document.getElementById('cryptoInspectorModal'));
@@ -155,7 +155,7 @@ const VeyraApp = {
       modal.show();
     });
 
-    
+
     document.getElementById('sidebarResetMesh')?.addEventListener('click', async (e) => {
       e.preventDefault();
       if (confirm('Reset virtual Bluetooth mesh and clear offline outbox?')) {
@@ -165,7 +165,7 @@ const VeyraApp = {
       }
     });
 
-    
+
     document.getElementById('btnTamperTest')?.addEventListener('click', () => {
       this.runTamperTest();
     });
@@ -188,7 +188,7 @@ const VeyraApp = {
       await this.loadTransactions(true);
       await this.loadQueue(true);
     } catch (e) {
-      
+
     }
   },
 
@@ -219,7 +219,7 @@ const VeyraApp = {
       const accounts = await VeyraAPI.getAccounts();
       this.cachedAccounts = accounts;
 
-      
+
       const senderSelects = [document.getElementById('txSender'), document.getElementById('modalTxSender')];
       const receiverSelects = [document.getElementById('txReceiver'), document.getElementById('modalTxReceiver')];
 
@@ -230,7 +230,7 @@ const VeyraApp = {
         accounts.forEach(acc => {
           const opt = document.createElement('option');
           opt.value = acc.vpa;
-          opt.textContent = `${acc.full_name} (${acc.vpa}) — ₹${parseFloat(acc.balance).toLocaleString('en-IN', {minimumFractionDigits: 2})}`;
+          opt.textContent = `${acc.full_name} (${acc.vpa}) — ₹${parseFloat(acc.balance).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
           sel.appendChild(opt);
         });
         if (current) sel.value = current;
@@ -249,7 +249,7 @@ const VeyraApp = {
         if (current) sel.value = current;
       });
 
-      
+
       const tbody = document.getElementById('banksTableBody');
       if (tbody) {
         tbody.innerHTML = '';
@@ -259,7 +259,7 @@ const VeyraApp = {
             <td><strong>${this.escapeHtml(acc.full_name)}</strong><br><small class="text-muted">${acc.username}</small></td>
             <td><code>${acc.vpa}</code></td>
             <td><small class="text-muted">${acc.account_number}</small></td>
-            <td><strong class="text-primary">₹${parseFloat(acc.balance).toLocaleString('en-IN', {minimumFractionDigits: 2})}</strong></td>
+            <td><strong class="text-primary">₹${parseFloat(acc.balance).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</strong></td>
             <td><span class="badge-soft-success">${acc.status}</span></td>
             <td><code>v${acc.version}</code></td>
           `;
@@ -278,7 +278,7 @@ const VeyraApp = {
       const metrics = res.metrics || {};
       this.cachedTransactions = txs;
 
-      
+
       const elTotal = document.getElementById('metricTotalTxs');
       const elPending = document.getElementById('metricPendingTxs');
       const elSettled = document.getElementById('metricSettledTxs');
@@ -287,7 +287,7 @@ const VeyraApp = {
       if (elPending) elPending.textContent = (metrics.CREATED || 0) + (metrics.QUEUED_FOR_SYNC || 0) + (metrics.PENDING_VERIFICATION || 0);
       if (elSettled) elSettled.textContent = metrics.SYNCHRONIZED || 0;
 
-      
+
       const tbody = document.getElementById('recentTransactionsBody');
       if (tbody) {
         tbody.innerHTML = '';
@@ -337,13 +337,11 @@ const VeyraApp = {
             </button>
           ` : '';
 
-          // created_at is unique per transaction (set at INSERT time).
-          // settled_at now uses per-row offset (created_at + random delay) so it's also unique.
           const fmtTs = raw => raw ? new Date(raw.replace(' ', 'T')).toLocaleString() : '—';
-          const createdDisplay  = fmtTs(tx.created_at);
-          const settledDisplay  = fmtTs(tx.settled_at);
+          const createdDisplay = fmtTs(tx.created_at);
+          const settledDisplay = fmtTs(tx.settled_at);
           const tsDisplay = tx.settled_at ? settledDisplay : createdDisplay;
-          const tsTitle   = tx.settled_at
+          const tsTitle = tx.settled_at
             ? `Queued: ${createdDisplay}\nSettled: ${settledDisplay}`
             : `Queued: ${createdDisplay}`;
           tr.innerHTML = `
@@ -396,7 +394,7 @@ const VeyraApp = {
                 <span class="fw-semibold">${this.escapeHtml(pkt.receiver_vpa)}</span>
               </div>
             </td>
-            <td><strong class="text-primary">₹${parseFloat(pkt.amount).toLocaleString('en-IN', {minimumFractionDigits: 2})}</strong></td>
+            <td><strong class="text-primary">₹${parseFloat(pkt.amount).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</strong></td>
             <td><span class="badge bg-secondary-subtle text-secondary border font-monospace">${this.escapeHtml(pkt.current_holder_node || 'phone-atul')}</span></td>
             <td><span class="badge bg-info-subtle text-info border">${pkt.ttl} hops</span></td>
             <td><span class="badge-soft-warning">${this.escapeHtml(pkt.status || 'QUEUED')}</span></td>
@@ -420,11 +418,11 @@ const VeyraApp = {
       const devices = mesh.devices || [];
       this.cachedMeshDevices = devices;
 
-      
+
       const elPeers = document.getElementById('metricMeshPeers');
       if (elPeers) elPeers.textContent = devices.length || 5;
 
-      
+
       const container = document.getElementById('meshNodesContainer');
       if (container) {
         container.innerHTML = '';
@@ -570,7 +568,7 @@ const VeyraApp = {
       this.updateTransitUI();
 
       if (remaining === Math.round(this.activeTransit.totalSeconds * 0.5)) {
-        VeyraAPI.runGossip().catch(() => {});
+        VeyraAPI.runGossip().catch(() => { });
       }
 
       if (remaining <= 0) {
@@ -613,7 +611,7 @@ const VeyraApp = {
     const timeStr = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
 
     const amountEl = document.getElementById('transitAmountDisplay');
-    if (amountEl) amountEl.textContent = `₹${parseFloat(amount).toLocaleString('en-IN', {minimumFractionDigits: 2})}`;
+    if (amountEl) amountEl.textContent = `₹${parseFloat(amount).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
 
     const routeEl = document.getElementById('transitRouteDisplay');
     if (routeEl) routeEl.textContent = `${senderVpa} → ${receiverVpa}`;
@@ -902,9 +900,9 @@ const VeyraApp = {
   escapeHtml(str) {
     if (!str) return '';
     return str.replace(/&/g, '&amp;')
-              .replace(/</g, '&lt;')
-              .replace(/>/g, '&gt;')
-              .replace(/"/g, '&quot;')
-              .replace(/'/g, '&#039;');
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
   }
 };
